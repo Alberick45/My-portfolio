@@ -18,11 +18,12 @@ const About: React.FC = () => {
             <div className="relative">
               <div className="relative overflow-hidden rounded-lg shadow-xl">
                 {/* This would be Albert's image - using a placeholder for now */}
-                <div className="bg-gradient-to-br from-indigo-500 to-emerald-500 w-full h-[400px] object-cover">
-                  <div className="w-full h-full flex items-center justify-center text-white text-xl">
-                    Albert's Image
-                  </div>
-                </div>
+                <img 
+                src="/albert.jpg" 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+              />
+                
               </div>
               <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-emerald-100 rounded-full -z-10"></div>
               <div className="absolute -top-6 -left-6 w-32 h-32 bg-indigo-100 rounded-full -z-10"></div>
