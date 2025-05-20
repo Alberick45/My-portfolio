@@ -17,7 +17,6 @@ const About: React.FC = () => {
           <div>
             <div className="relative">
               <div className="relative overflow-hidden rounded-lg shadow-xl">
-                {/* This would be Albert's image - using a placeholder for now */}
                 <img 
                 src="/albert.jpg" 
                 alt="Profile" 
