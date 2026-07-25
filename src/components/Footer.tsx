@@ -1,96 +1,99 @@
 import React from 'react';
-import { Heart, Github, Linkedin, Mail } from 'lucide-react';
+import { Heart, Github, Linkedin, Mail, Cpu } from 'lucide-react';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-slate-950 text-slate-400 py-12 border-t border-sky-950/60 font-mono-tech text-xs">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-2">
-            <a href="#" className="text-2xl font-bold mb-4 inline-block">
-              Albert<span className="text-emerald-400">.dev</span>
+          <div className="md:col-span-2 space-y-4">
+            <a href="/#" className="flex items-center space-x-2 text-base font-bold text-sky-400 tracking-wider">
+              <Cpu size={16} className="text-sky-400" />
+              <span>ALBERT<span className="text-amber-400">.DEV</span></span>
             </a>
-            <p className="text-gray-400 max-w-md mb-6">
-              A passionate tech enthusiast and developer from Ghana, building solutions that blend creativity with code and service with impact.
+            <p className="text-slate-500 max-w-md leading-relaxed font-sans">
+              Albert is a builder of systems, custom IoT modules, and clean user interfaces. Step into the workshop and observe the design iterations.
             </p>
             <div className="flex space-x-4">
               <a 
                 href="https://github.com/albertbaiden" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-slate-500 hover:text-sky-400 transition-colors"
                 aria-label="GitHub"
               >
-                <Github size={20} />
+                <Github size={18} />
               </a>
               <a 
                 href="https://linkedin.com/in/albert-baiden-amissah" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-slate-500 hover:text-sky-400 transition-colors"
                 aria-label="LinkedIn"
               >
-                <Linkedin size={20} />
+                <Linkedin size={18} />
               </a>
               <a 
                 href="mailto:ce-abaiden-amissah8423@st.umat.edu.gh"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-slate-500 hover:text-sky-400 transition-colors"
                 aria-label="Email"
               >
-                <Mail size={20} />
+                <Mail size={18} />
               </a>
             </div>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <h3 className="text-white font-bold uppercase tracking-wider mb-4">// NAVIGATION</h3>
+            <ul className="space-y-2 uppercase tracking-wide text-[10px]">
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors">About</a>
+                <a href="/#" className="text-slate-500 hover:text-sky-400 transition-colors">Home</a>
               </li>
               <li>
-                <a href="#skills" className="text-gray-400 hover:text-white transition-colors">Skills</a>
+                <a href="/#about" className="text-slate-500 hover:text-sky-400 transition-colors">About</a>
               </li>
               <li>
-                <a href="#projects" className="text-gray-400 hover:text-white transition-colors">Projects</a>
+                <a href="/#workshop" className="text-slate-500 hover:text-sky-400 transition-colors">Workshop</a>
               </li>
               <li>
-                <a href="#goals" className="text-gray-400 hover:text-white transition-colors">Goals</a>
+                <a href="/#journal" className="text-slate-500 hover:text-sky-400 transition-colors">Journal</a>
               </li>
               <li>
-                <a href="#blog" className="text-gray-400 hover:text-white transition-colors">Blog</a>
+                <a href="/#roadmap" className="text-slate-500 hover:text-sky-400 transition-colors">Roadmap</a>
               </li>
               <li>
-                <a href="#contact" className="text-gray-400 hover:text-white transition-colors">Contact</a>
+                <a href="/#contact" className="text-slate-500 hover:text-sky-400 transition-colors">Contact</a>
               </li>
             </ul>
           </div>
           
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Contact</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>Tema, Ghana</li>
-              <li>ce-abaiden-amissah8423@st.umat.edu.gh</li>
-              <li>+233 20 850 6317</li>
-            </ul>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-white font-bold uppercase tracking-wider mb-4">// TELEMETRY</h3>
+              <ul className="space-y-2 text-slate-500 font-sans">
+                <li>Tema, Ghana</li>
+                <li className="font-mono-tech text-[10px]">ce-abaiden-amissah8423@st.umat.edu.gh</li>
+                <li>+233 20 850 6317</li>
+              </ul>
+            </div>
             <a 
               href="/resume.pdf" 
               download
-              className="mt-4 inline-block bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className="inline-block border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 px-4 py-2 rounded-lg text-xs uppercase tracking-wide transition-all"
             >
-              Download Resume
+              Terminal.exe (CV)
             </a>
           </div>
         </div>
         
-        <div className="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-500 text-sm mb-4 md:mb-0">
-            &copy; {currentYear} Albert Baiden-Amissah. All rights reserved.
+        <div className="border-t border-sky-950/40 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center text-slate-600 text-[10px] uppercase">
+          <p className="mb-4 md:mb-0">
+            &copy; {currentYear} Albert Baiden-Amissah. [BUILD_STABLE]
           </p>
-          <p className="text-gray-500 text-sm flex items-center">
-            Made with <Heart size={14} className="text-red-500 mx-1" /> and code
+          <p className="flex items-center">
+            Fabricated with <Heart size={10} className="text-rose-500/60 mx-1 animate-pulse" /> in Tema, GH
           </p>
         </div>
       </div>

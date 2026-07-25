@@ -76,13 +76,15 @@ const getCategoryTheme = (cat: string) => {
   return BACKUP_THEMES[idx];
 };
 
-const Blog: React.FC = () => {
+const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   
   // Auth state
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
+    return localStorage.getItem('isAdminLoggedIn') === 'true';
+  });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [hasCredentials, setHasCredentials] = useState(false);
   
@@ -145,6 +147,12 @@ const Blog: React.FC = () => {
     if (adminUser && adminPassHash) {
       setHasCredentials(true);
     }
+
+    const handleStorageChange = () => {
+      setIsAdminLoggedIn(localStorage.getItem('isAdminLoggedIn') === 'true');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const savePostsToStorage = (updatedPosts: BlogPost[]) => {
@@ -233,6 +241,8 @@ const Blog: React.FC = () => {
 
       if (authUsername === storedUser && enteredHash === storedHash) {
         setIsAdminLoggedIn(true);
+        localStorage.setItem('isAdminLoggedIn', 'true');
+        window.dispatchEvent(new Event('storage'));
         setIsAuthModalOpen(false);
         setAuthUsername('');
         setAuthPassword('');
@@ -309,41 +319,79 @@ const Blog: React.FC = () => {
   };
 
   return (
-    <section id="blog" className="py-16 md:py-24 bg-white relative">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-16 relative select-none">
-          <h2 
-            onDoubleClick={() => setIsAuthModalOpen(true)}
-            className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-indigo-800 transition-colors"
-            title="Double-click to access admin console"
-          >
-            Blog & Journal
-          </h2>
-          <div className="w-20 h-1 bg-indigo-700 mx-auto mb-4"></div>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-            Thoughts, insights, and reflections on my journey through technology and beyond.
+    <section id="journal" className={`py-20 bg-blueprint-grid bg-[#090d16] border-t border-sky-950/40 relative ${!teaser ? 'pt-28' : ''}`}>
+      <div className="absolute inset-0 bg-dot-grid opacity-30 pointer-events-none"></div>
+
+      <div className="container mx-auto px-4 md:px-6 z-10 relative">
+        {/* Full Journal Back Button / Header Breadcrumb */}
+        {!teaser && (
+          <div className="max-w-6xl mx-auto mb-8 flex justify-between items-center font-mono-tech">
+            <a 
+              href="/#" 
+              className="inline-flex items-center text-xs uppercase tracking-wide text-sky-400 hover:text-white transition-colors"
+            >
+              <ArrowRight size={14} className="mr-2 rotate-180" />
+              Back to Workshop
+            </a>
+            {hasCredentials && (
+              <button 
+                onClick={() => {
+                  const nextState = !isAdminLoggedIn;
+                  setIsAdminLoggedIn(nextState);
+                  if (nextState) {
+                    localStorage.setItem('isAdminLoggedIn', 'true');
+                  } else {
+                    localStorage.removeItem('isAdminLoggedIn');
+                  }
+                  window.dispatchEvent(new Event('storage'));
+                }}
+                className="text-[10px] uppercase font-bold border border-sky-500/20 bg-slate-900 text-sky-400 px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-all"
+              >
+                {isAdminLoggedIn ? "Exit Console" : "Terminal Auth"}
+              </button>
+            )}
+          </div>
+        )}
+
+        <div className="mb-12 border-b border-sky-950/80 pb-6 flex flex-col md:flex-row md:items-end justify-between relative">
+          <div>
+            <span className="font-mono-tech text-xs text-sky-500 uppercase tracking-widest cursor-pointer" onDoubleClick={() => setIsAuthModalOpen(true)}>
+              // LOG_DEVICES_ENTRY
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mt-1">
+              Engineering <span className="text-sky-400">Journal</span>
+            </h2>
+          </div>
+          <p className="text-slate-400 text-sm max-w-md mt-2 md:mt-0 font-sans">
+            {teaser 
+              ? "Chronological snippets documenting hardware iterations, testing failures, and active technical logs." 
+              : "A running technical diary. Focuses on quick, natural entries about systems failures, research parameters, and micro-prototypes."}
           </p>
           
           {/* Admin Bar */}
           {isAdminLoggedIn && (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-indigo-50 border border-indigo-100 rounded-xl p-4 max-w-xl mx-auto shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
-              <span className="text-sm font-semibold text-indigo-900 flex items-center">
-                <Lock size={16} className="mr-1.5 text-indigo-600 animate-pulse" />
-                Administrator Mode Active
+            <div className="absolute top-full left-0 right-0 mt-4 z-20 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900 border border-sky-500/20 rounded-xl p-4 shadow-2xl font-mono-tech">
+              <span className="text-xs text-sky-400 flex items-center">
+                <Lock size={14} className="mr-1.5 text-sky-400 animate-pulse" />
+                CONSOLE_MODE: ADMINISTRATOR
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={handleOpenCreateModal}
-                  className="inline-flex items-center bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all shadow-md"
+                  className="bg-sky-500 hover:bg-sky-400 text-slate-950 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all"
                 >
-                  <Plus size={14} className="mr-1" />
-                  Write New Post
+                  <Plus size={12} className="inline mr-1" />
+                  New Log Entry
                 </button>
                 <button
-                  onClick={() => setIsAdminLoggedIn(false)}
-                  className="inline-flex items-center bg-white hover:bg-red-50 text-red-700 border border-red-200 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                  onClick={() => {
+                    setIsAdminLoggedIn(false);
+                    localStorage.removeItem('isAdminLoggedIn');
+                    window.dispatchEvent(new Event('storage'));
+                  }}
+                  className="bg-slate-950 border border-red-500/20 hover:border-red-500/55 text-red-400 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all"
                 >
-                  Log Out
+                  Close Console
                 </button>
               </div>
             </div>
@@ -351,64 +399,55 @@ const Blog: React.FC = () => {
         </div>
         
         {/* Posts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {posts.map((post) => (
+        <div className={`grid grid-cols-1 ${teaser ? 'md:grid-cols-2 max-w-4xl mx-auto' : 'md:grid-cols-3'} gap-8 ${isAdminLoggedIn ? 'pt-20' : ''}`}>
+          {(teaser ? posts.slice(0, 2) : posts).map((post) => (
             <div 
               key={post.id} 
               onClick={() => setSelectedPost(post)}
-              className="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between"
+              className="group panel-workshop p-6 rounded-xl border-sky-500/10 hover:border-sky-400/40 transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between"
             >
-              <div>
-                {/* Visual Header */}
-                <div className={`h-40 bg-gradient-to-br ${post.gradient} p-6 flex flex-col justify-between text-white relative`}>
-                  <div className="flex justify-between items-start">
-                    <span className="backdrop-blur-md bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/10">
-                      {post.category}
-                    </span>
-                    {isAdminLoggedIn && (
-                      <div className="flex gap-1.5 text-slate-800">
-                        <button
-                          onClick={(e) => handleOpenEditModal(post, e)}
-                          className="bg-white/95 hover:bg-white p-2 rounded-lg transition-colors shadow-sm"
-                          title="Edit Post"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button
-                          onClick={(e) => handleDeletePost(post.id, e)}
-                          className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors shadow-sm"
-                          title="Delete Post"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <span className="text-white/80 text-xs flex items-center mb-1">
-                      <Clock size={12} className="mr-1" />
-                      {post.readTime}
-                    </span>
-                  </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
+                  <span className="font-mono-tech text-[10px] text-sky-400 bg-sky-950/40 border border-sky-900/50 px-2 py-0.5 rounded uppercase">
+                    {post.category}
+                  </span>
+                  {isAdminLoggedIn && (
+                    <div className="flex gap-1 text-slate-800" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={(e) => handleOpenEditModal(post, e)}
+                        className="bg-slate-900 border border-sky-950 text-sky-400 hover:text-white p-1.5 rounded transition-colors"
+                        title="Edit Log"
+                      >
+                        <Edit2 size={12} />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeletePost(post.id, e)}
+                        className="bg-slate-900 border border-red-950 text-red-400 hover:text-white p-1.5 rounded transition-colors"
+                        title="Delete Log"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-700 transition-colors">
+                <div className="space-y-1.5">
+                  <h3 className="text-lg font-bold text-white group-hover:text-sky-400 transition-colors leading-snug">
                     {post.title}
                   </h3>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
+                  <p className="text-slate-400 text-xs font-sans leading-relaxed line-clamp-3">
                     {post.excerpt}
                   </p>
                 </div>
               </div>
 
-              <div className="px-6 pb-6 pt-2 border-t border-gray-50 flex justify-between items-center text-gray-500 text-xs">
+              <div className="mt-6 pt-4 border-t border-sky-950/60 flex justify-between items-center text-[10px] font-mono-tech text-slate-500">
                 <div className="flex items-center">
-                  <Calendar size={14} className="mr-1" />
+                  <Calendar size={12} className="mr-1 text-sky-500/50" />
                   {post.date}
                 </div>
-                <span className="text-indigo-700 group-hover:translate-x-1 transition-transform font-semibold flex items-center">
-                  Read Article <ArrowRight size={14} className="ml-1" />
+                <span className="text-sky-400 group-hover:underline flex items-center">
+                  Read Log <ArrowRight size={10} className="ml-1" />
                 </span>
               </div>
             </div>
@@ -416,120 +455,134 @@ const Blog: React.FC = () => {
         </div>
         
         {posts.length === 0 && (
-          <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-            <p className="text-slate-500 mb-2">No posts available. Double-click header to enter admin mode and write one!</p>
+          <div className="text-center py-12 bg-slate-950/50 rounded-xl border border-dashed border-sky-950/30 font-mono-tech text-xs text-slate-500">
+            <p className="mb-2">No journal logs available.{!teaser && " Double-click header to enter admin mode and write one!"}</p>
           </div>
         )}
 
-        {/* Subscribe Section */}
-        <div className="mt-16 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl p-8">
-          <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Subscribe to My Newsletter</h3>
-            <p className="text-gray-700 mb-6">
-              Get the latest updates on my projects, tech insights, and learning journey delivered straight to your inbox.
-            </p>
-            <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
-                className="flex-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                required
-              />
-              <button 
-                type="submit" 
-                className="bg-indigo-700 hover:bg-indigo-800 text-white px-6 py-2 rounded-md font-medium transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
+        {/* View All / Teaser Navigation Button */}
+        {teaser && posts.length > 0 && (
+          <div className="text-center mt-12 font-mono-tech">
+            <a 
+              href="/journal" 
+              className="border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 px-5 py-3 rounded-lg text-xs uppercase tracking-wide flex items-center justify-center transition-all w-fit mx-auto"
+            >
+              Explore Full Journal Log
+              <ArrowRight size={14} className="ml-2" />
+            </a>
           </div>
-        </div>
+        )}
+        {/* Subscribe Section */}
+        {!teaser && (
+          <div className="mt-16 bg-slate-900/40 border border-sky-950/60 rounded-xl p-8">
+            <div className="text-center max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold text-white mb-4">// SUBSCRIBE_TELEMETRY.sys</h3>
+              <p className="text-slate-400 mb-6">
+                Receive detailed logs of new firmware releases, prototype failures, and diagnostic logs directly in your mailbox.
+              </p>
+              <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto font-mono-tech text-xs">
+                <input 
+                  type="email" 
+                  placeholder="COMMS_ADDRESS@DOMAIN.COM" 
+                  className="flex-1 px-4 py-3 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans"
+                  required
+                />
+                <button 
+                  type="submit" 
+                  className="bg-sky-500 hover:bg-sky-400 text-slate-950 px-6 py-3 rounded-lg font-bold uppercase transition-colors"
+                >
+                  Establish Link
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Secret Auth Modal */}
       {isAuthModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center">
-                <Key size={18} className="text-indigo-600 mr-2" />
-                {hasCredentials ? 'Administrator Sign In' : 'Setup Administrator Credentials'}
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="panel-workshop max-w-md w-full rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-sky-950/60 flex justify-between items-center bg-slate-900 rounded-t-2xl">
+              <h3 className="text-sm font-bold text-white flex items-center font-mono-tech uppercase">
+                <Key size={16} className="text-sky-400 mr-2" />
+                {hasCredentials ? 'Console Auth' : 'Initialize Key'}
               </h3>
               <button 
                 onClick={() => {
                   setIsAuthModalOpen(false);
                   setAuthError('');
                 }}
-                className="text-slate-400 hover:text-slate-600 p-1 bg-white border border-slate-200 rounded-lg transition-colors"
+                className="text-slate-400 hover:text-white p-1 bg-slate-950 border border-sky-950 rounded-lg transition-colors"
               >
-                <X size={16} />
+                <X size={14} />
               </button>
             </div>
             
-            <form onSubmit={handleAuthSubmit} className="p-6 space-y-4 text-slate-800">
+            <form onSubmit={handleAuthSubmit} className="p-6 space-y-4 text-slate-300 font-mono-tech text-xs">
               {authError && (
-                <div className="bg-red-50 text-red-700 text-xs font-semibold px-3 py-2 rounded-lg border border-red-100">
+                <div className="bg-rose-500/10 text-rose-400 text-xs px-3 py-2 rounded-lg border border-rose-500/20">
                   {authError}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Username</label>
+                <label className="block text-slate-400 mb-1.5 uppercase">// Username</label>
                 <input 
                   type="text" 
                   value={authUsername}
                   onChange={(e) => setAuthUsername(e.target.value)}
                   placeholder="Enter administrator username"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-white"
+                  className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
+                <label className="block text-slate-400 mb-1.5 uppercase">// Password</label>
                 <input 
                   type="password" 
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
                   placeholder="Enter administrator password"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-white"
+                  className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400"
                   required
                 />
               </div>
 
               {!hasCredentials && (
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Confirm Password</label>
+                  <label className="block text-slate-400 mb-1.5 uppercase">// Confirm Password</label>
                   <input 
                     type="password" 
                     value={authConfirmPassword}
                     onChange={(e) => setAuthConfirmPassword(e.target.value)}
                     placeholder="Confirm password"
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-white"
+                    className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400"
                     required
                   />
-                  <p className="text-xs text-slate-400 mt-1">
-                    Setting up credentials for the first time. The password will be encrypted & hashed using SHA-256.
+                  <p className="text-[10px] text-slate-500 mt-2">
+                    Creating developer console credentials. The passphrase is encrypted and salted locally.
                   </p>
                 </div>
               )}
 
-              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100">
+              <div className="flex justify-end space-x-3 pt-4 border-t border-sky-950/60">
                 <button 
                   type="button"
                   onClick={() => {
                     setIsAuthModalOpen(false);
                     setAuthError('');
                   }}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2 border border-sky-950 text-slate-400 rounded-lg hover:bg-slate-800 transition-colors uppercase text-[10px] font-bold"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-sm font-semibold shadow-md transition-all"
+                  className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-lg transition-all uppercase text-[10px] font-bold"
                 >
-                  {hasCredentials ? 'Log In' : 'Register Admin'}
+                  {hasCredentials ? 'Authenticate' : 'Save Credentials'}
                 </button>
               </div>
             </form>
@@ -539,30 +592,30 @@ const Blog: React.FC = () => {
 
       {/* modal - Create / Edit Post */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl">
-              <h3 className="text-xl font-bold text-slate-800 flex items-center">
-                <Plus size={20} className="text-indigo-600 mr-2" />
-                {editingPostId ? 'Edit Article' : 'Write a New Article'}
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="panel-workshop rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-sky-500/20 animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-sky-950/60 flex justify-between items-center bg-slate-900 rounded-t-2xl">
+              <h3 className="text-sm font-bold text-white flex items-center font-mono-tech uppercase">
+                <Plus size={16} className="text-sky-400 mr-2" />
+                {editingPostId ? 'Edit Log Entry' : 'Append Workshop Log'}
               </h3>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 bg-white border border-slate-200 rounded-lg transition-colors"
+                className="text-slate-400 hover:text-white p-1 bg-slate-950 border border-sky-950 rounded-lg transition-colors"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
             
-            <form onSubmit={handleSavePost} className="p-6 space-y-4 text-slate-800">
+            <form onSubmit={handleSavePost} className="p-6 space-y-4 text-slate-300 font-mono-tech text-xs">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Title</label>
+                <label className="block text-slate-400 mb-1.5 uppercase">// Log Title</label>
                 <input 
                   type="text" 
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. My Experience Building Rokai Assistant"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                  placeholder="e.g. ESP32 LoRa Packet Tests in Rain"
+                  className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans"
                   required
                 />
               </div>
@@ -570,11 +623,11 @@ const Blog: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
-                    <label className="block text-sm font-semibold text-slate-700">Category</label>
+                    <label className="block text-slate-400 uppercase">// Category</label>
                     <button
                       type="button"
                       onClick={() => setShowAddCategoryInput(!showAddCategoryInput)}
-                      className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+                      className="text-[10px] text-sky-400 hover:text-sky-300 font-bold"
                     >
                       {showAddCategoryInput ? 'Cancel' : '+ Add Custom'}
                     </button>
@@ -587,12 +640,12 @@ const Blog: React.FC = () => {
                         value={newCategoryInput}
                         onChange={(e) => setNewCategoryInput(e.target.value)}
                         placeholder="New category name"
-                        className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-white"
+                        className="flex-1 px-3 py-1.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans"
                       />
                       <button
                         type="button"
                         onClick={handleAddCategory}
-                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold"
+                        className="px-3 py-1.5 bg-sky-500 text-slate-950 rounded-lg text-[10px] font-bold uppercase"
                       >
                         Add
                       </button>
@@ -601,7 +654,7 @@ const Blog: React.FC = () => {
                     <select 
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                      className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400"
                     >
                       {categories.map((cat, idx) => (
                         <option key={idx} value={cat}>{cat}</option>
@@ -611,55 +664,55 @@ const Blog: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Read Time</label>
+                  <label className="block text-slate-400 mb-1.5 uppercase">// Read Estimation</label>
                   <input 
                     type="text" 
                     value={readTime}
                     onChange={(e) => setReadTime(e.target.value)}
                     placeholder="e.g. 5 min read"
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                    className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Short Excerpt</label>
+                <label className="block text-slate-400 mb-1.5 uppercase">// Short Abstract</label>
                 <input 
                   type="text" 
                   value={excerpt}
                   onChange={(e) => setExcerpt(e.target.value)}
-                  placeholder="Brief summary of the article..."
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                  placeholder="Brief summary of the log..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Post Content</label>
+                <label className="block text-slate-400 mb-1.5 uppercase">// Log Content (Markdown support)</label>
                 <textarea 
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Write the body of your article here..."
+                  placeholder="Input detailed log entries..."
                   rows={6}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-sans bg-white"
+                  className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans"
                   required
                 ></textarea>
               </div>
 
-              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100">
+              <div className="flex justify-end space-x-3 pt-4 border-t border-sky-950/60">
                 <button 
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2.5 border border-sky-950 text-slate-400 rounded-lg hover:bg-slate-805 transition-colors uppercase text-[10px] font-bold"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all"
+                  className="px-4 py-2.5 bg-sky-500 text-slate-950 rounded-lg hover:bg-sky-400 transition-all uppercase text-[10px] font-bold"
                 >
-                  {editingPostId ? 'Save Changes' : 'Publish Post'}
+                  {editingPostId ? 'Apply Changes' : 'Append Entry'}
                 </button>
               </div>
             </form>
@@ -669,50 +722,42 @@ const Blog: React.FC = () => {
 
       {/* modal - Read Full Post */}
       {selectedPost && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <div className={`h-48 bg-gradient-to-br ${selectedPost.gradient} p-6 flex flex-col justify-between text-white relative`}>
-              <div className="flex justify-between items-start">
-                <span className="backdrop-blur-md bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/10">
-                  {selectedPost.category}
-                </span>
-                <button 
-                  onClick={() => setSelectedPost(null)}
-                  className="text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors border border-white/10 backdrop-blur-sm"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <div>
-                <div className="text-white/80 text-xs flex items-center mb-1">
-                  <Clock size={12} className="mr-1" />
-                  {selectedPost.readTime}
-                </div>
-              </div>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="panel-workshop rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-sky-500/20 animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-sky-950/60 flex justify-between items-center bg-slate-900 rounded-t-2xl">
+              <span className="font-mono-tech text-[10px] text-sky-400 bg-sky-950/40 border border-sky-900/50 px-2.5 py-1 rounded uppercase">
+                {selectedPost.category}
+              </span>
+              <button 
+                onClick={() => setSelectedPost(null)}
+                className="text-slate-400 hover:text-white p-1 bg-slate-950 border border-sky-950 rounded-lg transition-colors"
+              >
+                <X size={14} />
+              </button>
             </div>
 
             <div className="p-6 md:p-8 space-y-4">
-              <div className="flex items-center text-slate-400 text-xs">
-                <Calendar size={14} className="mr-1.5" />
-                {selectedPost.date}
+              <div className="flex items-center text-slate-500 font-mono-tech text-[10px]">
+                <Calendar size={12} className="mr-1.5" />
+                LOGGED_ON: {selectedPost.date} | ESTIMATED_DECRYPT: {selectedPost.readTime}
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
+              <h3 className="text-xl md:text-2xl font-bold text-white leading-tight font-sans">
                 {selectedPost.title}
               </h3>
-              <p className="text-slate-500 font-medium italic text-sm leading-relaxed border-l-2 border-indigo-600 pl-4 py-1">
+              <p className="text-slate-400 font-medium italic text-xs leading-relaxed border-l-2 border-sky-500/40 pl-4 py-1 font-sans">
                 {selectedPost.excerpt}
               </p>
-              <div className="text-slate-700 text-base leading-relaxed whitespace-pre-wrap pt-4">
+              <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap pt-4 font-sans border-t border-sky-950/40">
                 {selectedPost.content}
               </div>
             </div>
 
-            <div className="p-6 border-t border-slate-100 flex justify-end">
+            <div className="p-6 border-t border-sky-950/60 flex justify-end">
               <button 
                 onClick={() => setSelectedPost(null)}
-                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-colors"
+                className="px-4 py-2 bg-slate-950 border border-sky-950 text-slate-300 hover:text-white rounded-lg font-mono-tech text-xs uppercase tracking-wide transition-colors"
               >
-                Close Article
+                Close Log File
               </button>
             </div>
           </div>
