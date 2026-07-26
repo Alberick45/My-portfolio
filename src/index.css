@@ -105,4 +105,16 @@ body {
 .delay-400 { transition-delay: 400ms; }
 .delay-500 { transition-delay: 500ms; }
 .delay-600 { transition-delay: 600ms; }
-.delay-700 { transition-delay: 700ms; }
+.delay-700 { transition-delay: 700ms; }
+
+/* Disable scroll-reveal transitions on mobile/tablets to maximize scrolling performance */
+@media (max-width: 1024px) {
+  .reveal-element {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .delay-100, .delay-200, .delay-300, .delay-400, .delay-500, .delay-600, .delay-700 {
+    transition-delay: 0ms !important;
+  }
+}
