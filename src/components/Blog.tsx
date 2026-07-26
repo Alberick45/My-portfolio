@@ -199,41 +199,103 @@ const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const insertTag = (tag: string) => {
+    const start = textareaRef.current?.selectionStart || 0;
+    const end = textareaRef.current?.selectionEnd || 0;
+    const text = content;
+    const before = text.substring(0, start);
+    const after = text.substring(end, text.length);
+
+    setContent(before + tag + after);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleFileInsert = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Try uploading to FastAPI backend first
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
+    const isVid = file.type.startsWith('video/');
 
-      const res = await fetch("http://localhost:8000/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+    if (isVid) {
+      // Videos: Sign parameters on serverless backend, upload directly to Cloudinary
+      try {
+        const timestamp = Math.round(Date.now() / 1000);
+        const paramsToSign = {
+          folder: 'portfolio_videos',
+          timestamp: timestamp
+        };
 
-      if (res.ok) {
-        const data = await res.json();
-        const fileUrl = data.url;
-        const isVid = file.type.startsWith('video/');
-        const tag = isVid ? `\n![video](${fileUrl})\n` : `\n![${file.name}](${fileUrl})\n`;
+        const signRes = await fetch("/api/sign-cloudinary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ params: paramsToSign })
+        });
 
-        const start = textareaRef.current?.selectionStart || 0;
-        const end = textareaRef.current?.selectionEnd || 0;
-        const text = content;
-        const before = text.substring(0, start);
-        const after = text.substring(end, text.length);
+        if (signRes.ok) {
+          const signData = await signRes.json();
 
-        setContent(before + tag + after);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        return; // Exit if successful backend upload
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("api_key", signData.api_key);
+          formData.append("timestamp", timestamp.toString());
+          formData.append("signature", signData.signature);
+          formData.append("folder", 'portfolio_videos');
+
+          const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${signData.cloud_name}/video/upload`, {
+            method: "POST",
+            body: formData
+          });
+
+          if (cloudRes.ok) {
+            const cloudData = await cloudRes.json();
+            const fileUrl = cloudData.secure_url;
+            insertTag(`\n![video](${fileUrl})\n`);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Direct Cloudinary video upload failed. Falling back to local Base64 storage.", err);
       }
-    } catch (err) {
-      console.warn("FastAPI backend offline or unreachable. Falling back to local Base64 storage.", err);
+    } else {
+      // Images: Read as Base64 and send to serverless API (which commits directly to GitHub)
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64Content = event.target?.result as string;
+        if (!base64Content) return;
+
+        const rawBase64 = base64Content.split(',')[1];
+
+        try {
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              filename: file.name,
+              fileContent: rawBase64
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const fileUrl = data.url;
+            insertTag(`\n![${file.name}](${fileUrl})\n`);
+            return;
+          }
+        } catch (err) {
+          console.warn("Serverless image upload failed. Falling back to local Base64 storage.", err);
+        }
+
+        // Fallback: Local Base64 FileReader
+        if (file.size > 2.5 * 1024 * 1024) {
+          alert("Warning: LocalStorage has a 5MB limit. To prevent browser quota failures, please upload images/videos under 2.5MB, or use external URLs.");
+        }
+        insertTag(`\n![${file.name}](${base64Content})\n`);
+      };
+      reader.readAsDataURL(file);
+      return;
     }
 
-    // Fallback: Local Base64 FileReader
+    // Fallback: Local Base64 FileReader for Video
     if (file.size > 2.5 * 1024 * 1024) {
       alert("Warning: LocalStorage has a 5MB limit. To prevent browser quota failures, please upload images/videos under 2.5MB, or use external URLs.");
     }
@@ -242,18 +304,7 @@ const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
     reader.onload = (event) => {
       const result = event.target?.result as string;
       if (!result) return;
-
-      const isVid = file.type.startsWith('video/');
-      const tag = isVid ? `\n![video](${result})\n` : `\n![${file.name}](${result})\n`;
-
-      const start = textareaRef.current?.selectionStart || 0;
-      const end = textareaRef.current?.selectionEnd || 0;
-      const text = content;
-      const before = text.substring(0, start);
-      const after = text.substring(end, text.length);
-
-      setContent(before + tag + after);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      insertTag(`\n![video](${result})\n`);
     };
     reader.readAsDataURL(file);
   };
@@ -299,9 +350,9 @@ const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
   // Load from local storage and FastAPI backend
   useEffect(() => {
     const loadInitialPosts = async () => {
-      // First try to load from the FastAPI backend
+      // Load posts dynamically from the statically served public/posts.json
       try {
-        const res = await fetch("http://localhost:8000/api/posts");
+        const res = await fetch("/posts.json");
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {
@@ -311,7 +362,7 @@ const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
           }
         }
       } catch (err) {
-        console.warn("Could not fetch posts from FastAPI backend. Reading from localStorage.", err);
+        console.warn("Could not fetch posts statically. Reading from localStorage.", err);
       }
 
       // Fallback: load from localStorage
@@ -356,14 +407,14 @@ const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
     setPosts(updatedPosts);
     localStorage.setItem('albert-portfolio-posts', JSON.stringify(updatedPosts));
 
-    // Async push to backend
+    // Async push to serverless function (commits directly to GitHub)
     try {
-      await fetch("http://localhost:8000/api/posts", {
+      await fetch("/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedPosts),
+        body: JSON.stringify({ posts: updatedPosts }),
       });
     } catch (err) {
       console.error("Failed to persist posts to backend:", err);
