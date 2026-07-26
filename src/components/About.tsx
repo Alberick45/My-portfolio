@@ -6,6 +6,8 @@ const About: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [trail, setTrail] = useState<{ x: number; y: number; id: number }[]>([]);
   const [spotlightRadius, setSpotlightRadius] = useState(0);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const trailIdRef = useRef(0);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,6 +51,34 @@ const About: React.FC = () => {
     return () => {
       if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      // Calculate scroll progress through the viewport
+      // Starts revealing when the top of the element enters the bottom 90% of screen
+      // Fully revealed when the top of the element reaches the top 20% of screen
+      const startReveal = windowHeight * 0.9;
+      const endReveal = windowHeight * 0.2;
+      
+      const elementTop = rect.top;
+      const progress = Math.min(Math.max((startReveal - elementTop) / (startReveal - endReveal), 0), 1);
+      
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+    
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
@@ -130,6 +160,19 @@ const About: React.FC = () => {
                     {/* Bounding box relative mask */}
                     <mask id="liquid-mask" maskContentUnits="objectBoundingBox">
                       <rect width="1" height="1" fill="black" />
+                      
+                      {/* Scroll-driven liquid reveal for touch/mobile screens */}
+                      {isTouchDevice && scrollProgress > 0 && (
+                        <rect
+                          x="0"
+                          y="0"
+                          width="1"
+                          height={scrollProgress}
+                          fill="white"
+                          filter="url(#acid-distortion)"
+                        />
+                      )}
+
                       {/* Active fluid trail circles */}
                       {trail.map((point, idx) => {
                         const ratio = (idx + 1) / trail.length;

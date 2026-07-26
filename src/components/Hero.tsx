@@ -19,6 +19,7 @@ const Hero: React.FC = () => {
   const robotRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isBlinking, setIsBlinking] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
 
   // Typewriter effect
   useEffect(() => {
@@ -55,8 +56,15 @@ const Hero: React.FC = () => {
     return () => clearTimeout(timer);
   }, [typedText, isDeleting, phraseIndex, typingSpeed]);
 
-  // Mouse tracking for Robot head
+  // Detect touch/mobile
   useEffect(() => {
+    setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
+
+  // Mouse tracking for Robot head (only on non-touch devices)
+  useEffect(() => {
+    if (isTouch) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       if (!robotRef.current) return;
       const rect = robotRef.current.getBoundingClientRect();
@@ -80,7 +88,44 @@ const Hero: React.FC = () => {
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [isTouch]);
+
+  // Mobile idle sway and scroll tracking
+  useEffect(() => {
+    if (!isTouch) return;
+
+    let animationFrameId: number;
+
+    const handleScroll = () => {
+      if (!robotRef.current) return;
+      const scrollY = window.scrollY;
+      const threshold = window.innerHeight; // Max scroll depth for tilt
+      const scrollFactor = Math.min(scrollY / threshold, 1);
+      
+      // Target Y goes from 0 (centered) to 9 (looking down)
+      const targetY = scrollFactor * 9;
+      setMousePos(prev => ({ ...prev, y: targetY }));
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    const updateIdle = (time: number) => {
+      const seconds = time / 1000;
+      // Gentle horizontal looking back and forth using sine wave
+      const targetX = Math.sin(seconds * 0.5) * 6; // Max 6px horizontal offset
+      
+      setMousePos(prev => ({ ...prev, x: targetX }));
+      animationFrameId = requestAnimationFrame(updateIdle);
+    };
+
+    animationFrameId = requestAnimationFrame(updateIdle);
+    handleScroll(); // Initial position check
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isTouch]);
 
   // Blinking loop
   useEffect(() => {
@@ -266,7 +311,7 @@ const Hero: React.FC = () => {
             <div className="w-full mt-4 bg-slate-950/80 rounded-lg p-2.5 border border-sky-950 font-mono-tech text-[10px] text-sky-400 space-y-0.5">
               <div className="flex justify-between">
                 <span>SYSTEM MODE:</span>
-                <span className="text-amber-400">MONITOR_CURSOR</span>
+                <span className="text-amber-400">{isTouch ? "AUTO_PATROL_SCROLL" : "MONITOR_CURSOR"}</span>
               </div>
               <div className="flex justify-between">
                 <span>MASCOT COORDS:</span>

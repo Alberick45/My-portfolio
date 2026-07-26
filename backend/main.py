@@ -26,6 +26,7 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 POSTS_FILE = os.path.join(BASE_DIR, "posts.json")
+ROADMAP_FILE = os.path.join(BASE_DIR, "roadmap.json")
 PUBLIC_IMAGES_DIR = os.path.join(os.path.dirname(BASE_DIR), "public", "images")
 
 # Load environment variables from the project root's .env file
@@ -61,6 +62,18 @@ class BlogPost(BaseModel):
     categoryColor: str
     gradient: str
 
+class RoadmapItem(BaseModel):
+    title: str
+    description: str
+    status: str
+    timeframe: str
+
+class RoadmapLane(BaseModel):
+    id: str
+    title: str
+    subtitle: str
+    items: List[RoadmapItem]
+
 def load_posts() -> List[dict]:
     if not os.path.exists(POSTS_FILE):
         return []
@@ -74,6 +87,26 @@ def save_posts(posts: List[dict]):
     with open(POSTS_FILE, "w", encoding="utf-8") as f:
         json.dump(posts, f, ensure_ascii=False, indent=2)
 
+def load_roadmap() -> List[dict]:
+    if not os.path.exists(ROADMAP_FILE):
+        public_roadmap = os.path.join(os.path.dirname(BASE_DIR), "public", "roadmap.json")
+        if os.path.exists(public_roadmap):
+            try:
+                with open(public_roadmap, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return []
+    try:
+        with open(ROADMAP_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+def save_roadmap(roadmap: List[dict]):
+    with open(ROADMAP_FILE, "w", encoding="utf-8") as f:
+        json.dump(roadmap, f, ensure_ascii=False, indent=2)
+
 @app.get("/api/posts", response_model=List[BlogPost])
 async def get_posts():
     return load_posts()
@@ -83,6 +116,16 @@ async def update_posts(posts: List[BlogPost]):
     posts_data = [post.dict() for post in posts]
     save_posts(posts_data)
     return posts_data
+
+@app.get("/api/roadmap", response_model=List[RoadmapLane])
+async def get_roadmap():
+    return load_roadmap()
+
+@app.post("/api/roadmap", response_model=List[RoadmapLane])
+async def update_roadmap(roadmap: List[RoadmapLane]):
+    roadmap_data = [lane.dict() for lane in roadmap]
+    save_roadmap(roadmap_data)
+    return roadmap_data
 
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):

@@ -1,0 +1,78 @@
+[
+  {
+    "id": "current",
+    "title": "01. Current",
+    "subtitle": "Actively designing & building",
+    "items": [
+      {
+        "title": "Launch BuilderOS v1",
+        "description": "Development of an ESP32-based RTOS shell for multi-device serial mesh networks.",
+        "status": "active",
+        "timeframe": "Q3 2026"
+      },
+      {
+        "title": "Local LLM API Node",
+        "description": "Integrating light sentiment NLP models directly on local Raspberry Pi cluster endpoints.",
+        "status": "active",
+        "timeframe": "Q3 2026"
+      }
+    ]
+  },
+  {
+    "id": "next",
+    "title": "02. Next",
+    "subtitle": "Scheduled engineering queue",
+    "items": [
+      {
+        "title": "Develop Robotics Platform",
+        "description": "Modular motorized chassis drafting with real-time feedback loops via WebSockets.",
+        "status": "pending",
+        "timeframe": "Q4 2026"
+      },
+      {
+        "title": "LoRa Mesh Network Nodes",
+        "description": "Field testing solar-powered node housings in regional Ghana areas.",
+        "status": "pending",
+        "timeframe": "Q1 2027"
+      }
+    ]
+  },
+  {
+    "id": "future",
+    "title": "03. Future",
+    "subtitle": "Long-term research & design",
+    "items": [
+      {
+        "title": "Create A³PK Labs",
+        "description": "Public open-source repository index for educational DIY hardware modules.",
+        "status": "pending",
+        "timeframe": "2027"
+      },
+      {
+        "title": "Research Autonomous Drone AI",
+        "description": "Exploring computer vision pathfinding on budget-friendly embedded chips.",
+        "status": "pending",
+        "timeframe": "2027"
+      }
+    ]
+  },
+  {
+    "id": "dream",
+    "title": "04. Dream",
+    "subtitle": "Blue-sky vision statements",
+    "items": [
+      {
+        "title": "Community Open-Lab",
+        "description": "Establishing a physical hardware fabrication space in Tema for young makers.",
+        "status": "dream",
+        "timeframe": "Future"
+      },
+      {
+        "title": "Solar Powered Server Grid",
+        "description": "Hosting micro-services completely powered by custom solar battery arrays.",
+        "status": "dream",
+        "timeframe": "Future"
+      }
+    ]
+  }
+]
