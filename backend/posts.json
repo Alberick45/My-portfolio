@@ -1,0 +1,35 @@
+[
+  {
+    "id": "default-1",
+    "title": "My Journey Learning Hardware Basics",
+    "excerpt": "Exploring the fascinating world of electronics and hardware during my internship and the valuable lessons I've learned along the way.",
+    "content": "\n![0.7% - System Scan (Spybot - Search & Destroy 2.9, administrator privileges) 7_10_2026 5_25_40 AM.png](http://localhost:8000/uploads/upload_1cc89ab6bbf01135.png)\n\n\nDuring my internship, I had the incredible opportunity to dive into the fundamentals of electronics and microcontrollers. Working with hands-on hardware circuits helped demystify how software interacts with physical logic gates, microcontrollers, and real-world inputs.",
+    "date": "May 15, 2025",
+    "readTime": "5 min read",
+    "category": "Hardware",
+    "categoryColor": "bg-emerald-50 text-emerald-700 border-emerald-100",
+    "gradient": "from-emerald-400 to-teal-500"
+  },
+  {
+    "id": "default-2",
+    "title": "Building The Mood Match: Challenges and Solutions",
+    "excerpt": "An inside look at the development process of my mood-matching platform and how I'm overcoming technical challenges.",
+    "content": "The Mood Match concept relies on sentiment analysis and user preferences. Bridging the API integrations, ensuring sub-second response times, and selecting accurate recommendation paths was both challenging and rewarding. I designed a customized matching algorithm to make music suggestions feel highly responsive and natural.",
+    "date": "April 28, 2025",
+    "readTime": "4 min read",
+    "category": "Development",
+    "categoryColor": "bg-indigo-50 text-indigo-700 border-indigo-100",
+    "gradient": "from-indigo-400 to-blue-500"
+  },
+  {
+    "id": "default-3",
+    "title": "The Intersection of Technology and Spirituality",
+    "excerpt": "Reflecting on how technology can enhance spiritual experiences and foster meaningful connections in our digital age.",
+    "content": "In a world dominated by rapid notifications and short attention spans, designing spaces for quiet reflection and spiritual community becomes vital. By leveraging clean, simple interface design, we can build online spaces that encourage meditation, prayer, and deep connection.",
+    "date": "April 10, 2025",
+    "readTime": "6 min read",
+    "category": "Reflection",
+    "categoryColor": "bg-amber-50 text-amber-700 border-amber-100",
+    "gradient": "from-amber-400 to-orange-500"
+  }
+]

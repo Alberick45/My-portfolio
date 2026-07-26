@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, ArrowRight, Plus, X, Trash2, Edit2, Lock, Key } from 'lucide-react';
 
 interface BlogPost {
@@ -76,11 +76,188 @@ const getCategoryTheme = (cat: string) => {
   return BACKUP_THEMES[idx];
 };
 
+const parseInlineStyles = (text: string) => {
+  // Basic inline bold **text** parsing
+  const parts = text.split(/(\*\*.*?\*\*)/);
+  return parts.flatMap((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return [<strong key={`b-${i}`} className="text-white font-bold">{part.slice(2, -2)}</strong>];
+    }
+    // Basic inline italic *text* parsing
+    const subParts = part.split(/(\*.*?\*)/);
+    return subParts.map((subPart, j) => {
+      if (subPart.startsWith('*') && subPart.endsWith('*')) {
+        return <em key={`i-${i}-${j}`} className="text-sky-300 italic">{subPart.slice(1, -1)}</em>;
+      }
+      return subPart;
+    });
+  });
+};
+
+const renderFormattedContent = (content: string) => {
+  const lines = content.split('\n');
+  return lines.map((line, idx) => {
+    const trimmed = line.trim();
+
+    // Empty lines
+    if (trimmed === '') {
+      return <div key={`empty-${idx}`} className="h-3" />;
+    }
+
+    // Video tag match: e.g., ![video](url)
+    const videoRegex = /!\[video\]\((.*?)\)/i;
+    const videoMatch = trimmed.match(videoRegex);
+    if (videoMatch) {
+      const videoUrl = videoMatch[1];
+      return (
+        <div key={`vid-${idx}`} className="my-6 rounded-xl overflow-hidden border border-sky-500/20 bg-slate-950 p-2 shadow-2xl">
+          <video src={videoUrl} controls className="w-full rounded-lg max-h-[400px] object-contain bg-black" />
+        </div>
+      );
+    }
+
+    // Image tag match: e.g., ![alt](url)
+    const imageRegex = /!\[(.*?)\]\((.*?)\)/;
+    const imageMatch = trimmed.match(imageRegex);
+    if (imageMatch) {
+      const altText = imageMatch[1];
+      const imageUrl = imageMatch[2];
+      
+      // Check if it's actually a video url
+      const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(imageUrl) || altText.toLowerCase() === 'video';
+      if (isVideo) {
+        return (
+          <div key={`vid-img-${idx}`} className="my-6 rounded-xl overflow-hidden border border-sky-500/20 bg-slate-950 p-2 shadow-2xl">
+            <video src={imageUrl} controls className="w-full rounded-lg max-h-[400px] object-contain bg-black" />
+          </div>
+        );
+      }
+
+      return (
+        <div key={`img-${idx}`} className="my-6 rounded-xl overflow-hidden border border-sky-500/20 bg-slate-950 p-2 shadow-2xl">
+          <img src={imageUrl} alt={altText} className="w-full rounded-lg max-h-[500px] object-cover bg-slate-900 mx-auto" />
+          {altText && <p className="text-[10px] text-slate-500 font-mono-tech mt-2 text-center">// {altText}</p>}
+        </div>
+      );
+    }
+
+    // Headings
+    if (trimmed.startsWith('### ')) {
+      return <h4 key={`h3-${idx}`} className="text-xs font-bold text-sky-400 mt-6 mb-2 font-mono-tech uppercase tracking-wider">{trimmed.slice(4)}</h4>;
+    }
+    if (trimmed.startsWith('## ')) {
+      return <h3 key={`h2-${idx}`} className="text-sm font-bold text-white mt-6 mb-2 font-sans border-b border-sky-950/20 pb-1">{trimmed.slice(3)}</h3>;
+    }
+    if (trimmed.startsWith('# ')) {
+      return <h2 key={`h1-${idx}`} className="text-base font-bold text-white mt-8 mb-3 font-sans border-b border-sky-950/50 pb-2">{trimmed.slice(2)}</h2>;
+    }
+
+    // Lists
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      return (
+        <ul key={`ul-${idx}`} className="list-disc pl-5 my-1 text-slate-300">
+          <li className="font-sans text-xs leading-relaxed">{parseInlineStyles(trimmed.slice(2))}</li>
+        </ul>
+      );
+    }
+
+    // Numbered lists
+    const numListMatch = trimmed.match(/^(\d+)\.\s(.*)/);
+    if (numListMatch) {
+      const num = numListMatch[1];
+      const rest = numListMatch[2];
+      return (
+        <ol key={`ol-${idx}`} className="list-decimal pl-5 my-1 text-slate-300">
+          <li value={num} className="font-sans text-xs leading-relaxed">{parseInlineStyles(rest)}</li>
+        </ol>
+      );
+    }
+
+    // Blockquotes
+    if (trimmed.startsWith('> ')) {
+      return (
+        <blockquote key={`quote-${idx}`} className="border-l-2 border-sky-500/40 pl-4 py-1 italic my-4 text-slate-400 font-sans text-xs">
+          {parseInlineStyles(trimmed.slice(2))}
+        </blockquote>
+      );
+    }
+
+    // Normal paragraph
+    return (
+      <p key={`p-${idx}`} className="text-slate-300 text-xs leading-relaxed mb-3 font-sans">
+        {parseInlineStyles(line)}
+      </p>
+    );
+  });
+};
+
 const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleFileInsert = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Try uploading to FastAPI backend first
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("http://localhost:8000/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const fileUrl = data.url;
+        const isVid = file.type.startsWith('video/');
+        const tag = isVid ? `\n![video](${fileUrl})\n` : `\n![${file.name}](${fileUrl})\n`;
+
+        const start = textareaRef.current?.selectionStart || 0;
+        const end = textareaRef.current?.selectionEnd || 0;
+        const text = content;
+        const before = text.substring(0, start);
+        const after = text.substring(end, text.length);
+
+        setContent(before + tag + after);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return; // Exit if successful backend upload
+      }
+    } catch (err) {
+      console.warn("FastAPI backend offline or unreachable. Falling back to local Base64 storage.", err);
+    }
+
+    // Fallback: Local Base64 FileReader
+    if (file.size > 2.5 * 1024 * 1024) {
+      alert("Warning: LocalStorage has a 5MB limit. To prevent browser quota failures, please upload images/videos under 2.5MB, or use external URLs.");
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (!result) return;
+
+      const isVid = file.type.startsWith('video/');
+      const tag = isVid ? `\n![video](${result})\n` : `\n![${file.name}](${result})\n`;
+
+      const start = textareaRef.current?.selectionStart || 0;
+      const end = textareaRef.current?.selectionEnd || 0;
+      const text = content;
+      const before = text.substring(0, start);
+      const after = text.substring(end, text.length);
+
+      setContent(before + tag + after);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Auth state
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
     return localStorage.getItem('isAdminLoggedIn') === 'true';
@@ -119,19 +296,39 @@ const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
       .join('');
   };
 
-  // Load from local storage
+  // Load from local storage and FastAPI backend
   useEffect(() => {
-    const saved = localStorage.getItem('albert-portfolio-posts');
-    if (saved) {
+    const loadInitialPosts = async () => {
+      // First try to load from the FastAPI backend
       try {
-        setPosts(JSON.parse(saved));
-      } catch (e) {
-        setPosts(DEFAULT_POSTS);
+        const res = await fetch("http://localhost:8000/api/posts");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            setPosts(data);
+            localStorage.setItem('albert-portfolio-posts', JSON.stringify(data));
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch posts from FastAPI backend. Reading from localStorage.", err);
       }
-    } else {
-      setPosts(DEFAULT_POSTS);
-      localStorage.setItem('albert-portfolio-posts', JSON.stringify(DEFAULT_POSTS));
-    }
+
+      // Fallback: load from localStorage
+      const saved = localStorage.getItem('albert-portfolio-posts');
+      if (saved) {
+        try {
+          setPosts(JSON.parse(saved));
+        } catch (e) {
+          setPosts(DEFAULT_POSTS);
+        }
+      } else {
+        setPosts(DEFAULT_POSTS);
+        localStorage.setItem('albert-portfolio-posts', JSON.stringify(DEFAULT_POSTS));
+      }
+    };
+
+    loadInitialPosts();
 
     const savedCats = localStorage.getItem('albert-portfolio-categories');
     if (savedCats) {
@@ -155,9 +352,22 @@ const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const savePostsToStorage = (updatedPosts: BlogPost[]) => {
+  const savePostsToStorage = async (updatedPosts: BlogPost[]) => {
     setPosts(updatedPosts);
     localStorage.setItem('albert-portfolio-posts', JSON.stringify(updatedPosts));
+
+    // Async push to backend
+    try {
+      await fetch("http://localhost:8000/api/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedPosts),
+      });
+    } catch (err) {
+      console.error("Failed to persist posts to backend:", err);
+    }
   };
 
   const saveCategoriesToStorage = (updatedCats: string[]) => {
@@ -689,12 +899,31 @@ const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1.5 uppercase">// Log Content (Markdown support)</label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-slate-400 uppercase">// Log Content (Markdown support)</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-[10px] text-sky-400 hover:text-sky-300 font-bold border border-sky-500/20 bg-slate-950 px-2.5 py-1 rounded"
+                    >
+                      📎 Upload Image / Video
+                    </button>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleFileInsert} 
+                      className="hidden" 
+                      accept="image/*,video/*"
+                    />
+                  </div>
+                </div>
                 <textarea 
+                  ref={textareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Input detailed log entries..."
-                  rows={6}
+                  placeholder="Input detailed log entries... Support Markdown: ## Headers, **bold**, *italics*, ![Alt](image_url), and ![video](video_url)"
+                  rows={8}
                   className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans"
                   required
                 ></textarea>
@@ -744,11 +973,8 @@ const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
               <h3 className="text-xl md:text-2xl font-bold text-white leading-tight font-sans">
                 {selectedPost.title}
               </h3>
-              <p className="text-slate-400 font-medium italic text-xs leading-relaxed border-l-2 border-sky-500/40 pl-4 py-1 font-sans">
-                {selectedPost.excerpt}
-              </p>
-              <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap pt-4 font-sans border-t border-sky-950/40">
-                {selectedPost.content}
+              <div className="text-slate-300 text-sm leading-relaxed pt-4 font-sans border-t border-sky-950/40">
+                {renderFormattedContent(selectedPost.content)}
               </div>
             </div>
 
