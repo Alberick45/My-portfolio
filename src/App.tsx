@@ -9,10 +9,12 @@ import Blog from './components/Blog';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import TerminalConsole from './components/TerminalConsole';
+import Loader from './components/Loader';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -104,27 +106,30 @@ function App() {
   }, [currentPath]);
 
   return (
-    <div className="font-sans min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-sky-500/30 selection:text-sky-200">
-      <div>
-        <Header onOpenTerminal={() => setIsTerminalOpen(true)} />
-        <main>
-          {currentPath === '/journal' ? (
-            <Blog teaser={false} />
-          ) : (
-            <>
-              <Hero />
-              <About />
-              <Projects />
-              <Blog teaser={true} />
-              <Goals />
-              <Contact />
-            </>
-          )}
-        </main>
+    <>
+      {isLoading && <Loader onFinished={() => setIsLoading(false)} />}
+      <div className="font-sans min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-sky-500/30 selection:text-sky-200">
+        <div>
+          <Header onOpenTerminal={() => setIsTerminalOpen(true)} />
+          <main>
+            {currentPath === '/journal' ? (
+              <Blog teaser={false} />
+            ) : (
+              <>
+                <Hero />
+                <About />
+                <Projects />
+                <Blog teaser={true} />
+                <Goals />
+                <Contact />
+              </>
+            )}
+          </main>
+        </div>
+        <Footer />
+        <TerminalConsole isOpen={isTerminalOpen} onClose={() => setIsTerminalOpen(false)} />
       </div>
-      <Footer />
-      <TerminalConsole isOpen={isTerminalOpen} onClose={() => setIsTerminalOpen(false)} />
-    </div>
+    </>
   );
 }
 
