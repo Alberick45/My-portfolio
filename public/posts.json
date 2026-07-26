@@ -1,5 +1,16 @@
 [
   {
+    "id": "1785085613154",
+    "title": "IEEE x GDG x Aaenics Hackathon Highlights & Pitching Takeaways",
+    "excerpt": "Attended a combined IEEE, GDG, and Aaenics hackathon at Longjii Hotel. Observations on a winning idea, key takeaways on problem-first pitch strategies, and personal event reflections.",
+    "content": "## Overview\nAttended a combined hackathon hosted by IEEE, GDG, and Aaenics at Longjii Hotel. The event brought together student developers, organizers, and judges for a fast-paced solution-building session.\n\n---\n\n## Event Timeline & Experience\n* **Preparation & Arrival:** Prepped early in the morning, waited on campus, and headed to Longjii Hotel where a dedicated section was set up for the competition.\n* **Kickoff & Energy:** The event opened with guest and judge introductions. MC Nana Afia kept the energy high, followed by an insightful segment detailing what IEEE entails and its scope.\n* **Final Sprint & Pitching:** Participating teams were given a final 30-minute window to finalize their builds before presenting to the judges.\n\n![Winningteam-Aaenics26.jpeg](/images/upload_dd6a6d0962b23b92.jpeg)\n\n---\n\n## Key Observations & Winning Pitch\n* A team consisting mostly of **Aaenics** members took first place with a brilliant, highly polished concept.\n* **Judges' Feedback:** The evaluation session provided sharp, actionable feedback on value proposition, technical feasibility, and pitch delivery.\n\n### Core Engineering Takeaway for Pitching:\n> **Problem-First Framing:** When presenting an idea, the priority is to clearly illuminate the problem so the audience grasps its true weight. Follow it up with a practical, cost-effective solution your team can execute. Mastering this balance makes any pitch compelling.\n\n---\n\n*Note: Great event overall—and the food was definitely a bonus.*\n![Winningteam-Aaenics26.jpeg](/images/upload_769e607d131225e8.jpeg)\n",
+    "date": "July 26, 2026",
+    "readTime": "3 min read",
+    "category": "Development",
+    "categoryColor": "bg-indigo-50 text-indigo-700 border-indigo-100",
+    "gradient": "from-indigo-400 to-blue-500"
+  },
+  {
     "id": "default-1",
     "title": "My Journey Learning Hardware Basics",
     "excerpt": "Exploring the fascinating world of electronics and hardware during my internship and the valuable lessons I've learned along the way.",
