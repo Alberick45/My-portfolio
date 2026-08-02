@@ -3,7 +3,7 @@ import { Heart, Github, Linkedin, Mail, Cpu } from 'lucide-react';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
-  
+
   return (
     <footer className="bg-slate-950 text-slate-400 py-12 border-t border-sky-950/60 font-mono-tech text-xs">
       <div className="container mx-auto px-4 md:px-6">
@@ -17,26 +17,26 @@ const Footer: React.FC = () => {
               Albert is a builder of systems, custom IoT modules, and clean user interfaces. Step into the workshop and observe the design iterations.
             </p>
             <div className="flex space-x-4">
-              <a 
-                href="https://github.com/albertbaiden" 
-                target="_blank" 
+              <a
+                href="https://github.com/albertbaiden"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-500 hover:text-sky-400 transition-colors"
                 aria-label="GitHub"
               >
                 <Github size={18} />
               </a>
-              <a 
-                href="https://linkedin.com/in/albert-baiden-amissah" 
-                target="_blank" 
+              <a
+                href="https://linkedin.com/in/albert-baiden-amissah"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-500 hover:text-sky-400 transition-colors"
                 aria-label="LinkedIn"
               >
                 <Linkedin size={18} />
               </a>
-              <a 
-                href="mailto:ce-abaiden-amissah8423@st.umat.edu.gh"
+              <a
+                href="mailto:albertbaidenamissah@proton.me"
                 className="text-slate-500 hover:text-sky-400 transition-colors"
                 aria-label="Email"
               >
@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
               </a>
             </div>
           </div>
-          
+
           <div>
             <h3 className="text-white font-bold uppercase tracking-wider mb-4">// NAVIGATION</h3>
             <ul className="space-y-2 uppercase tracking-wide text-[10px]">
@@ -68,18 +68,18 @@ const Footer: React.FC = () => {
               </li>
             </ul>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <h3 className="text-white font-bold uppercase tracking-wider mb-4">// TELEMETRY</h3>
               <ul className="space-y-2 text-slate-500 font-sans">
                 <li>Tema, Ghana</li>
-                <li className="font-mono-tech text-[10px]">ce-abaiden-amissah8423@st.umat.edu.gh</li>
+                <li className="font-mono-tech text-[10px]">albertbaidenamissah@proton.me</li>
                 <li>+233 20 850 6317</li>
               </ul>
             </div>
-            <a 
-              href="/resume.pdf" 
+            <a
+              href="/resume.pdf"
               download
               className="inline-block border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 px-4 py-2 rounded-lg text-xs uppercase tracking-wide transition-all"
             >
@@ -87,7 +87,7 @@ const Footer: React.FC = () => {
             </a>
           </div>
         </div>
-        
+
         <div className="border-t border-sky-950/40 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center text-slate-600 text-[10px] uppercase">
           <p className="mb-4 md:mb-0">
             &copy; {currentYear} Albert Baiden-Amissah. [BUILD_STABLE]
