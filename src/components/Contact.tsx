@@ -1,7 +1,94 @@
-import React from 'react';
-import { Mail, Phone, MapPin, Linkedin, Github, MessageSquare, Terminal, Send } from 'lucide-react';
+import React, { useState } from 'react';
+import { Mail, Phone, MapPin, Linkedin, Github, MessageSquare, Terminal, Send, Loader2 } from 'lucide-react';
 
 const Contact: React.FC = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const triggerMailtoFallback = () => {
+    const mailtoUrl = `mailto:albertbaidenamissah@proton.me?subject=${encodeURIComponent(
+      formData.subject || 'Portfolio Inquiry'
+    )}&body=${encodeURIComponent(
+      `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
+    )}`;
+    window.location.href = mailtoUrl;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus('sending');
+    setStatusMessage('');
+
+    const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+
+    if (!accessKey || accessKey.includes('your_web3forms')) {
+      console.warn('Web3Forms Access Key is not configured in .env. Falling back to mailto.');
+      setStatus('error');
+      setStatusMessage('NO ACCESS KEY DETECTED. INITIALIZING DIRECT COMMS FALLBACK...');
+      setTimeout(() => {
+        triggerMailtoFallback();
+        setStatus('idle');
+      }, 1500);
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: accessKey,
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          from_name: `${formData.name} via Portfolio`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: '',
+        });
+        // Reset status to idle after a few seconds
+        setTimeout(() => setStatus('idle'), 5000);
+      } else {
+        throw new Error(data.message || 'Submission failed');
+      }
+    } catch (err: any) {
+      console.error('Submission error:', err);
+      setStatus('error');
+      setStatusMessage('TRANSMISSION TIMEOUT. LAUNCHING DIRECT COMMS FALLBACK...');
+      setTimeout(() => {
+        triggerMailtoFallback();
+        setStatus('idle');
+      }, 1500);
+    }
+  };
+
   return (
     <section id="contact" className="py-20 bg-blueprint-grid bg-[#090d16] border-t border-sky-950/40 relative">
       <div className="absolute inset-0 bg-dot-grid opacity-30 pointer-events-none"></div>
@@ -32,16 +119,19 @@ const Contact: React.FC = () => {
                   CONNECTION_CONSOLE.exe
                 </h3>
 
-                <form className="space-y-4 font-mono-tech text-xs">
+                <form onSubmit={handleSubmit} className="space-y-4 font-mono-tech text-xs">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="name" className="block text-slate-400 mb-1.5 uppercase">// CALL_SIGN (NAME)</label>
                       <input
                         type="text"
                         id="name"
+                        value={formData.name}
+                        onChange={handleChange}
                         placeholder="e.g. Captain Nemo"
                         className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans"
                         required
+                        disabled={status === 'sending'}
                       />
                     </div>
                     <div>
@@ -49,9 +139,12 @@ const Contact: React.FC = () => {
                       <input
                         type="email"
                         id="email"
+                        value={formData.email}
+                        onChange={handleChange}
                         placeholder="e.g. nemo@nautilus.org"
                         className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans"
                         required
+                        disabled={status === 'sending'}
                       />
                     </div>
                   </div>
@@ -61,9 +154,12 @@ const Contact: React.FC = () => {
                     <input
                       type="text"
                       id="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
                       placeholder="e.g. LoRa Project Collaboration query"
                       className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans"
                       required
+                      disabled={status === 'sending'}
                     />
                   </div>
 
@@ -72,18 +168,52 @@ const Contact: React.FC = () => {
                     <textarea
                       id="message"
                       rows={5}
+                      value={formData.message}
+                      onChange={handleChange}
                       placeholder="Input detailed packet contents..."
                       className="w-full px-4 py-2.5 rounded-lg border border-sky-950 bg-slate-950 text-white focus:outline-none focus:border-sky-400 font-sans text-sm"
                       required
+                      disabled={status === 'sending'}
                     ></textarea>
                   </div>
 
+                  {status !== 'idle' && (
+                    <div className={`p-4 rounded-lg border font-mono-tech text-xs transition-all ${
+                      status === 'sending' 
+                        ? 'bg-sky-950/20 border-sky-500/30 text-sky-400 animate-pulse'
+                        : status === 'success'
+                        ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-400'
+                        : 'bg-amber-950/20 border-amber-500/30 text-amber-400'
+                    }`}>
+                      <p className="flex items-center gap-2">
+                        <span className={`h-1.5 w-1.5 rounded-full bg-current ${status === 'sending' ? 'animate-ping' : ''}`} />
+                        <span>
+                          {status === 'sending' && `// TRANSMITTING TELEMETRY PACKET...`}
+                          {status === 'success' && `// SYSTEM: SIGNAL TRANSMITTED SUCCESSFULLY. [OK]`}
+                          {status === 'error' && `// SYSTEM: ${statusMessage}`}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold uppercase tracking-wider text-xs px-6 py-3.5 rounded-lg transition-all flex items-center"
+                    disabled={status === 'sending'}
+                    className={`bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold uppercase tracking-wider text-xs px-6 py-3.5 rounded-lg transition-all flex items-center ${
+                      status === 'sending' ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   >
-                    <Send size={14} className="mr-2" />
-                    Transmit Signal
+                    {status === 'sending' ? (
+                      <>
+                        <Loader2 size={14} className="mr-2 animate-spin" />
+                        Transmitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={14} className="mr-2" />
+                        Transmit Signal
+                      </>
+                    )}
                   </button>
                 </form>
               </div>
