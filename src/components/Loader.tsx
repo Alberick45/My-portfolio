@@ -1,25 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { Settings, Cpu, HardDrive } from 'lucide-react';
-
-const LOAD_MESSAGES = [
-  { threshold: 0, text: '[ INIT ] BOOTING_WORKSHOP_OS v1.4.2...' },
-  { threshold: 12, text: '[ CORE ] INDEXING_PORTFOLIO_DOCKETS...' },
-  { threshold: 28, text: '[ ASSETS ] MOUNTING_CAD_ASSEMBLY_Blueprints...' },
-  { threshold: 42, text: '[ FIRMWARE ] INITIALIZING_ESP32_TELEMETRY_BUFFERS...' },
-  { threshold: 58, text: '[ SHADER ] PRECOMPILING_PORTRAIT_FLUID_TRANSITION...' },
-  { threshold: 72, text: '[ MESH ] ESTABLISHING_HANDSHAKE_WITH_MASCOT_OK02...' },
-  { threshold: 88, text: '[ NETWORK ] FETCHING_ROADMAP_GIT_COMMIT_CONFIG...' },
-  { threshold: 96, text: '[ CONFIG ] ALIGNING_INTERFACE_BLUEPRINT_GRIDS...' },
-  { threshold: 100, text: '[ OK ] SYSTEM_ONLINE. LAUNCHING WORKSHOP CONSOLE.' }
-];
+import { useVisitor } from '../context/VisitorContext';
 
 interface LoaderProps {
   onFinished: () => void;
 }
 
 const Loader: React.FC<LoaderProps> = ({ onFinished }) => {
+  const { visitorName } = useVisitor();
+  const nameFormatted = visitorName ? visitorName.toUpperCase() : 'GUEST_OPERATOR';
+
+  const loadMessages = [
+    { threshold: 0, text: `[ INIT ] WELCOME_${nameFormatted} // BOOTING_WORKSHOP_OS...` },
+    { threshold: 12, text: `[ AUTH ] IDENTITY_VERIFIED // SESSION_${nameFormatted}` },
+    { threshold: 28, text: '[ ASSETS ] MOUNTING_CAD_ASSEMBLY_BLUEPRINTS...' },
+    { threshold: 42, text: '[ FIRMWARE ] INITIALIZING_ESP32_TELEMETRY_BUFFERS...' },
+    { threshold: 58, text: '[ SHADER ] PRECOMPILING_PORTRAIT_FLUID_TRANSITION...' },
+    { threshold: 72, text: '[ MESH ] ESTABLISHING_HANDSHAKE_WITH_MASCOT_OK02...' },
+    { threshold: 88, text: '[ NETWORK ] FETCHING_ROADMAP_GIT_COMMIT_CONFIG...' },
+    { threshold: 96, text: `[ CONFIG ] ALIGNING_INTERFACE_GRIDS_FOR_${nameFormatted}...` },
+    { threshold: 100, text: `[ OK ] SYSTEM_ONLINE. LAUNCHING WORKSHOP FOR ${nameFormatted}.` }
+  ];
+
   const [progress, setProgress] = useState(0);
-  const [activeMessage, setActiveMessage] = useState(LOAD_MESSAGES[0].text);
+  const [activeMessage, setActiveMessage] = useState(loadMessages[0].text);
   const [fadeAway, setFadeAway] = useState(false);
 
   useEffect(() => {
@@ -34,12 +38,13 @@ const Loader: React.FC<LoaderProps> = ({ onFinished }) => {
         const next = Math.min(prev + increment, 100);
         
         // Find the active loading message based on progress threshold
-        const matched = LOAD_MESSAGES.reduce((acc, curr) => {
+        const matched = loadMessages.reduce((acc, curr) => {
           if (next >= curr.threshold) return curr.text;
           return acc;
-        }, LOAD_MESSAGES[0].text);
+        }, loadMessages[0].text);
         
         setActiveMessage(matched);
+
 
         if (next >= 100) {
           clearInterval(timer);

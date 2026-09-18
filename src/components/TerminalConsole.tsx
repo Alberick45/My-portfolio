@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Terminal as TerminalIcon, X } from 'lucide-react';
+import { useVisitor } from '../context/VisitorContext';
 
 interface TerminalConsoleProps {
   isOpen: boolean;
@@ -12,10 +13,13 @@ interface LogLine {
 }
 
 const TerminalConsole: React.FC<TerminalConsoleProps> = ({ isOpen, onClose }) => {
+  const { visitorName, visitorEmail } = useVisitor();
+  const visitorFormatted = visitorName ? visitorName : 'Guest Operator';
+
   const [history, setHistory] = useState<LogLine[]>([
     { text: 'ALBERT.DEV [Version 2.0.0]', type: 'output' },
-    { text: 'Establishing secure link to Tema, Ghana...', type: 'output' },
-    { text: 'Session active. Type "help" to view command registry.', type: 'success' },
+    { text: `Session active for ${visitorFormatted}.`, type: 'output' },
+    { text: 'Type "help" to view command registry.', type: 'success' },
   ]);
   const [inputVal, setInputVal] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -24,6 +28,7 @@ const TerminalConsole: React.FC<TerminalConsoleProps> = ({ isOpen, onClose }) =>
   
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -57,6 +62,7 @@ const TerminalConsole: React.FC<TerminalConsoleProps> = ({ isOpen, onClose }) =>
       case 'help':
         newHistory.push(
           { text: '---- REGISTRY COMMANDS ----', type: 'output' },
+          { text: '  whoami       : View your current visitor session profile', type: 'output' },
           { text: '  about        : Query Albert\'s mission statement', type: 'output' },
           { text: '  skills       : Display capability matrices', type: 'output' },
           { text: '  projects     : List active build logs', type: 'output' },
@@ -69,6 +75,16 @@ const TerminalConsole: React.FC<TerminalConsoleProps> = ({ isOpen, onClose }) =>
           { text: '---------------------------', type: 'output' }
         );
         break;
+
+      case 'whoami':
+        newHistory.push(
+          { text: '// VISITOR TELEMETRY DOSSIER //', type: 'output' },
+          { text: `  - Name   : ${visitorName || 'Guest User (Unregistered)'}`, type: 'success' },
+          { text: `  - Email  : ${visitorEmail || 'Not provided'}`, type: 'output' },
+          { text: '  - Status : Doorbell Mansion Access Granted', type: 'output' }
+        );
+        break;
+
 
       case 'about':
         newHistory.push(

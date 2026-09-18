@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -10,11 +9,15 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import TerminalConsole from './components/TerminalConsole';
 import Loader from './components/Loader';
+import DoorbellIntro from './components/DoorbellIntro';
+import { VisitorProvider } from './context/VisitorContext';
 
-function App() {
+function PortfolioApp() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Intro Sequence Stages: 'doorbell' -> 'loader' -> 'ready'
+  const [introStage, setIntroStage] = useState<'doorbell' | 'loader' | 'ready'>('doorbell');
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -74,6 +77,8 @@ function App() {
 
   // Intersection Observer for scroll reveal animations
   useEffect(() => {
+    if (introStage !== 'ready') return;
+
     const observerOptions = {
       root: null,
       rootMargin: '0px 0px -10% 0px', // triggers when element is 10% inside the viewport
@@ -103,11 +108,18 @@ function App() {
       clearTimeout(timer);
       observer.disconnect();
     };
-  }, [currentPath]);
+  }, [currentPath, introStage]);
 
   return (
     <>
-      {isLoading && <Loader onFinished={() => setIsLoading(false)} />}
+      {introStage === 'doorbell' && (
+        <DoorbellIntro onComplete={() => setIntroStage('loader')} />
+      )}
+
+      {introStage === 'loader' && (
+        <Loader onFinished={() => setIntroStage('ready')} />
+      )}
+
       <div className="font-sans min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-sky-500/30 selection:text-sky-200">
         <div>
           <Header onOpenTerminal={() => setIsTerminalOpen(true)} />
@@ -133,4 +145,12 @@ function App() {
   );
 }
 
-export default App;
+function App() {
+  return (
+    <VisitorProvider>
+      <PortfolioApp />
+    </VisitorProvider>
+  );
+}
+
+export default App;

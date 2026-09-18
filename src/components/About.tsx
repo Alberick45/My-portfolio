@@ -62,22 +62,22 @@ const About: React.FC = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const windowHeight = window.innerHeight;
-      
+
       // Calculate scroll progress through the viewport
       // Starts revealing when the top of the element enters the bottom 90% of screen
       // Fully revealed when the top of the element reaches the top 20% of screen
       const startReveal = windowHeight * 0.9;
       const endReveal = windowHeight * 0.2;
-      
+
       const elementTop = rect.top;
       const progress = Math.min(Math.max((startReveal - elementTop) / (startReveal - endReveal), 0), 1);
-      
+
       setScrollProgress(progress);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial check
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -98,7 +98,7 @@ const About: React.FC = () => {
           <div className="text-slate-400 text-xs font-mono-tech flex items-center gap-4 mt-4 md:mt-0">
             <span>STATUS: ACTIVE_BUILDER</span>
             <span className="text-sky-500">//</span>
-            <span>LOC: GH_ACCRA</span>
+            <span>LOC: GH_TEMA</span>
           </div>
         </div>
 
@@ -160,7 +160,7 @@ const About: React.FC = () => {
                     {/* Bounding box relative mask */}
                     <mask id="liquid-mask" maskContentUnits="objectBoundingBox">
                       <rect width="1" height="1" fill="black" />
-                      
+
                       {/* Scroll-driven liquid reveal for touch/mobile screens */}
                       {isTouchDevice && scrollProgress > 0 && (
                         <rect

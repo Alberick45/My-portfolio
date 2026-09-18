@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Code, BookOpen, Terminal, Sparkles } from 'lucide-react';
+import { Code, BookOpen, Terminal, Sparkles, User } from 'lucide-react';
+import { useVisitor } from '../context/VisitorContext';
 
 const HERO_PHRASES = [
   "Building Intelligent Systems",
@@ -9,17 +10,19 @@ const HERO_PHRASES = [
 ];
 
 const Hero: React.FC = () => {
+  const { visitorName } = useVisitor();
   const [typedText, setTypedText] = useState("");
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [typingSpeed, setTypingSpeed] = useState(100);
   const [statusText] = useState("Exploring New Ideas"); // Configurable via dashboard state in future
-  
+
   // Robot tracking states
   const robotRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isBlinking, setIsBlinking] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
+
 
   // Typewriter effect
   useEffect(() => {
@@ -155,14 +158,24 @@ const Hero: React.FC = () => {
         {/* Left Column: Mission, Title, and Buttons */}
         <div className="lg:col-span-7 space-y-6 text-left">
           
-          {/* Status Badge */}
-          <div className="inline-flex items-center space-x-2 bg-slate-900 border border-sky-500/30 rounded-lg px-3 py-1.5 text-xs font-mono-tech text-sky-400">
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            <span>STATUS: {statusText.toUpperCase()}</span>
+          {/* Status & Visitor Operator Badges */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <div className="inline-flex items-center space-x-2 bg-slate-900 border border-sky-500/30 rounded-lg px-3 py-1.5 text-xs font-mono-tech text-sky-400">
+              <span className="flex h-2.5 w-2.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span>STATUS: {statusText.toUpperCase()}</span>
+            </div>
+
+            {visitorName && (
+              <div className="inline-flex items-center space-x-1.5 bg-amber-950/40 border border-amber-500/40 rounded-lg px-3 py-1.5 text-xs font-mono-tech text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.15)] animate-fade-in">
+                <User className="w-3.5 h-3.5 text-amber-400" />
+                <span>OPERATOR: {visitorName.toUpperCase()}</span>
+              </div>
+            )}
           </div>
+
 
           <div className="space-y-3">
             <h2 className="text-sm font-mono-tech uppercase tracking-[0.25em] text-slate-400">
