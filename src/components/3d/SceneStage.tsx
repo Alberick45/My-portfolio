@@ -5,6 +5,7 @@ import { WORKSHOP_DATA } from '../../config/workshopData';
 import { Room } from './Room';
 import { Box3D } from './Box3D';
 import { WorkshopModal, ModalData } from './WorkshopModal';
+import { MobileWorkshopStage } from './MobileWorkshopStage';
 import { ChevronDown, ChevronLeft, ChevronRight, Cpu, Sparkles, Terminal, Flame, BookOpen, Layers, User, Zap } from 'lucide-react';
 
 interface SceneStageProps {
@@ -12,6 +13,18 @@ interface SceneStageProps {
 }
 
 export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
+  const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (isMobile) {
+    return <MobileWorkshopStage onOpenTerminal={onOpenTerminal} />;
+  }
+
   const {
     curZ,
     rotX,
@@ -20,14 +33,6 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
     prefersReducedMotion,
     scrollToStation,
   } = useZScroll();
-
-  const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const activeStationIdx = WORKSHOP_STATIONS.reduce((acc, st, idx) => {
     const dist = Math.abs(curZ - (-st.z));
