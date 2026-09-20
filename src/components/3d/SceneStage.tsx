@@ -21,10 +21,6 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  if (isMobile) {
-    return <MobileWorkshopStage onOpenTerminal={onOpenTerminal} />;
-  }
-
   const {
     curZ,
     rotX,
@@ -45,7 +41,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
   const [isBlinking, setIsBlinking] = useState(false);
 
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion || isMobile) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       const cx = window.innerWidth / 2;
@@ -58,17 +54,18 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, isMobile]);
 
   // Periodic blinking interval for Mascot OK-02
   useEffect(() => {
+    if (isMobile) return;
     const blinkInterval = setInterval(() => {
       setIsBlinking(true);
       setTimeout(() => setIsBlinking(false), 160);
     }, 3200);
 
     return () => clearInterval(blinkInterval);
-  }, []);
+  }, [isMobile]);
 
   // Progressive Disclosure Modal State
   const [modalState, setModalState] = useState<ModalData>({
@@ -78,6 +75,10 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
   });
 
   const closeModal = useCallback(() => setModalState((prev) => ({ ...prev, isOpen: false })), []);
+
+  if (isMobile) {
+    return <MobileWorkshopStage onOpenTerminal={onOpenTerminal} />;
+  }
 
   // Helper to compute depth fog style (opacity & contrast based on distance from camera)
   const getPropFogStyle = (propZ: number) => {
