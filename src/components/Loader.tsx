@@ -27,17 +27,51 @@ const Loader: React.FC<LoaderProps> = ({ onFinished }) => {
   const [fadeAway, setFadeAway] = useState(false);
 
   useEffect(() => {
-    // Total duration around 2.4 seconds
-    const duration = 2400; 
-    const intervalTime = 30; 
-    const steps = duration / intervalTime;
-    const increment = 100 / steps;
+    const assetsToPreload = [
+      '/albert.jpg',
+      '/albert2-cropped.jpg',
+      '/albert-transparent.png',
+      '/albert2-transparent.png',
+      '/albert2.JPG',
+      '/posts.json',
+      '/roadmap.json',
+      '/visitors.json'
+    ];
 
+    let loadedCount = 0;
+    const totalAssets = assetsToPreload.length;
+
+    const notifyAssetLoaded = () => {
+      loadedCount++;
+      const targetPercent = Math.min(100, Math.round((loadedCount / totalAssets) * 100));
+      setProgress((prev) => Math.max(prev, targetPercent));
+    };
+
+    // Preload all assets in parallel during the loading screen
+    assetsToPreload.forEach((src) => {
+      if (src.endsWith('.json')) {
+        fetch(src)
+          .then((res) => res.json())
+          .then(() => notifyAssetLoaded())
+          .catch(() => notifyAssetLoaded());
+      } else {
+        const img = new Image();
+        img.onload = notifyAssetLoaded;
+        img.onerror = notifyAssetLoaded;
+        img.src = src;
+        if ('decode' in img) {
+          img.decode().catch(() => {});
+        }
+      }
+    });
+
+    // Smooth interval progression to guarantee completion even on fast network/cached assets
+    const intervalTime = 35;
     const timer = setInterval(() => {
       setProgress((prev) => {
-        const next = Math.min(prev + increment, 100);
+        const next = Math.min(prev + 3, 100);
         
-        // Find the active loading message based on progress threshold
+        // Find active loading message based on progress threshold
         const matched = loadMessages.reduce((acc, curr) => {
           if (next >= curr.threshold) return curr.text;
           return acc;
@@ -45,15 +79,14 @@ const Loader: React.FC<LoaderProps> = ({ onFinished }) => {
         
         setActiveMessage(matched);
 
-
         if (next >= 100) {
           clearInterval(timer);
           setTimeout(() => {
             setFadeAway(true);
             setTimeout(() => {
               onFinished();
-            }, 600); // matches the transition duration
-          }, 500); // pause at 100% to let the user see the OK state
+            }, 550);
+          }, 450);
         }
         return next;
       });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, ArrowRight, Plus, X, Trash2, Edit2, Lock, Key } from 'lucide-react';
+import { SocialShareBar } from './3d/WorkshopModal';
 
 interface BlogPost {
   id: string;
@@ -1032,6 +1033,7 @@ const Blog: React.FC<BlogProps> = ({ teaser = false, onOpenModal }) => {
               <div className="text-slate-300 text-sm leading-relaxed pt-4 font-sans border-t border-sky-950/40">
                 {renderFormattedContent(selectedPost.content)}
               </div>
+              <SocialShareBar title={selectedPost.title} text={selectedPost.excerpt} />
             </div>
 
             <div className="p-6 border-t border-sky-950/60 flex justify-end">

@@ -1,6 +1,94 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ExternalLink, Cpu, Terminal, Layers, Wrench, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Calendar } from 'lucide-react';
+import { X, ExternalLink, Cpu, Terminal, Layers, Wrench, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Calendar, Share2, Twitter, Linkedin, MessageSquare, Copy, Check } from 'lucide-react';
 import { LogArticle } from '../../config/workshopData';
+
+// Reusable Social Share Bar Component
+export const SocialShareBar: React.FC<{ title: string; text?: string; url?: string }> = ({ title, text, url }) => {
+  const [copied, setCopied] = useState(false);
+  const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+  const shareText = text || title;
+
+  const handleNativeShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (typeof navigator !== 'undefined' && 'share' in navigator) {
+      try {
+        await navigator.share({
+          title: title,
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        // User cancelled share
+      }
+    }
+  };
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(`${title} — ${shareUrl}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const encodedUrl = encodeURIComponent(shareUrl);
+  const encodedText = encodeURIComponent(`${title} — Albert Baiden-Amissah (A3PK Labs)`);
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 pt-3 mt-3 border-t border-slate-800/80 font-mono-tech text-[10px]">
+      <span className="flex items-center gap-1 font-bold text-sky-400">
+        <Share2 size={12} /> SHARE LOG:
+      </span>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {typeof navigator !== 'undefined' && 'share' in navigator && (
+          <button
+            type="button"
+            onClick={handleNativeShare}
+            className="px-2 py-1 bg-sky-950/90 border border-sky-700/80 text-sky-300 hover:text-white hover:bg-sky-900 rounded transition-all flex items-center gap-1 font-bold"
+          >
+            <Share2 size={10} /> Share
+          </button>
+        )}
+        <a
+          href={`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="px-2 py-1 bg-slate-900 border border-slate-700 text-sky-300 hover:text-white hover:border-sky-400 rounded transition-all flex items-center gap-1"
+        >
+          <Twitter size={10} /> X/Twitter
+        </a>
+        <a
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="px-2 py-1 bg-slate-900 border border-slate-700 text-blue-300 hover:text-white hover:border-blue-400 rounded transition-all flex items-center gap-1"
+        >
+          <Linkedin size={10} /> LinkedIn
+        </a>
+        <a
+          href={`https://api.whatsapp.com/send?text=${encodedText}%20${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="px-2 py-1 bg-slate-900 border border-slate-700 text-emerald-300 hover:text-white hover:border-emerald-400 rounded transition-all flex items-center gap-1"
+        >
+          <MessageSquare size={10} /> WhatsApp
+        </a>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="px-2 py-1 bg-slate-900 border border-slate-700 text-amber-300 hover:text-white hover:border-amber-400 rounded transition-all flex items-center gap-1 font-mono-tech"
+        >
+          {copied ? <Check size={10} className="text-emerald-400" /> : <Copy size={10} />}
+          <span>{copied ? 'COPIED!' : 'COPY LINK'}</span>
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export interface ModalData {
   isOpen: boolean;
@@ -287,6 +375,7 @@ export const WorkshopModal: React.FC<WorkshopModalProps> = ({ data, onClose }) =
                                 ))}
                               </div>
                             )}
+                            <SocialShareBar title={log.title} text={log.abstract} />
                           </div>
                         )}
                       </div>

@@ -5,7 +5,7 @@ import { WORKSHOP_DATA } from '../../config/workshopData';
 import { Room } from './Room';
 import { Box3D } from './Box3D';
 import { WorkshopModal, ModalData } from './WorkshopModal';
-import { ChevronDown, Cpu, Sparkles, Terminal, Flame, BookOpen, Layers, User, Zap } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Cpu, Sparkles, Terminal, Flame, BookOpen, Layers, User, Zap } from 'lucide-react';
 
 interface SceneStageProps {
   onOpenTerminal?: () => void;
@@ -20,6 +20,20 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
     prefersReducedMotion,
     scrollToStation,
   } = useZScroll();
+
+  const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const activeStationIdx = WORKSHOP_STATIONS.reduce((acc, st, idx) => {
+    const dist = Math.abs(curZ - (-st.z));
+    const minDist = Math.abs(curZ - (-WORKSHOP_STATIONS[acc].z));
+    return dist < minDist ? idx : acc;
+  }, 0);
 
   // Mouse tracking for Robot Mascot head & eye pupil tracking inside Showcase Pedestal
   const [mascotMousePos, setMascotMousePos] = useState({ x: 0, y: 0 });
@@ -894,6 +908,32 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
           </div>
         </div>
       )}
+
+      {/* Mobile Floating Station Quick Navigator Pill Bar */}
+      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-slate-950/90 border border-sky-500/50 rounded-full px-3 py-1.5 shadow-[0_0_30px_rgba(56,189,248,0.25)] backdrop-blur-md md:hidden font-mono-tech select-none">
+        <button
+          type="button"
+          onClick={() => scrollToStation(Math.max(0, activeStationIdx - 1))}
+          disabled={activeStationIdx === 0}
+          aria-label="Previous Station"
+          className="p-1 rounded-full text-sky-400 hover:text-white disabled:opacity-30 transition-colors"
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <div className="text-[10px] font-bold text-white uppercase tracking-wider px-1 text-center whitespace-nowrap">
+          <span className="text-amber-400 mr-1 font-bold">[{activeStationIdx + 1}/5]</span>
+          {WORKSHOP_STATIONS[activeStationIdx].label}
+        </div>
+        <button
+          type="button"
+          onClick={() => scrollToStation(Math.min(WORKSHOP_STATIONS.length - 1, activeStationIdx + 1))}
+          disabled={activeStationIdx === WORKSHOP_STATIONS.length - 1}
+          aria-label="Next Station"
+          className="p-1 rounded-full text-sky-400 hover:text-white disabled:opacity-30 transition-colors"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
 
       {/* Dark Radial Vignette Overlay */}
       <div
