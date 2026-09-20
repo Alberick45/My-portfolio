@@ -2,7 +2,116 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ExternalLink, Cpu, Terminal, Layers, Wrench, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Calendar, Share2, Twitter, Linkedin, MessageSquare, Copy, Check } from 'lucide-react';
 import { LogArticle } from '../../config/workshopData';
 
-// Reusable Social Share Bar Component
+// Markdown inline style parser (bold **text**, italics *text*)
+export const parseInlineStyles = (text: string) => {
+  const parts = text.split(/(\*\*.*?\*\*)/);
+  return parts.flatMap((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return [<strong key={`b-${i}`} className="text-white font-bold">{part.slice(2, -2)}</strong>];
+    }
+    const subParts = part.split(/(\*.*?\*)/);
+    return subParts.map((subPart, j) => {
+      if (subPart.startsWith('*') && subPart.endsWith('*')) {
+        return <em key={`i-${i}-${j}`} className="text-sky-300 italic">{subPart.slice(1, -1)}</em>;
+      }
+      return subPart;
+    });
+  });
+};
+
+// Full Markdown Content Renderer (Headings, Images, Videos, Bullet Lists, Blockquotes, HRs)
+export const renderFormattedContent = (content: string) => {
+  if (!content) return null;
+  const lines = content.split('\n');
+  return lines.map((line, idx) => {
+    const trimmed = line.trim();
+
+    if (trimmed === '') {
+      return <div key={`empty-${idx}`} className="h-3" />;
+    }
+
+    if (trimmed === '---' || trimmed === '***') {
+      return <hr key={`hr-${idx}`} className="my-4 border-sky-950/80" />;
+    }
+
+    const videoRegex = /!\[video\]\((.*?)\)/i;
+    const videoMatch = trimmed.match(videoRegex);
+    if (videoMatch) {
+      const videoUrl = videoMatch[1];
+      return (
+        <div key={`vid-${idx}`} className="my-4 rounded-xl overflow-hidden border border-sky-500/30 bg-slate-950 p-2 shadow-2xl">
+          <video src={videoUrl} controls className="w-full rounded-lg max-h-[400px] object-contain bg-black" />
+        </div>
+      );
+    }
+
+    const imageRegex = /!\[(.*?)\]\((.*?)\)/;
+    const imageMatch = trimmed.match(imageRegex);
+    if (imageMatch) {
+      const altText = imageMatch[1];
+      const imageUrl = imageMatch[2];
+      
+      const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(imageUrl) || altText.toLowerCase() === 'video';
+      if (isVideo) {
+        return (
+          <div key={`vid-img-${idx}`} className="my-4 rounded-xl overflow-hidden border border-sky-500/30 bg-slate-950 p-2 shadow-2xl">
+            <video src={imageUrl} controls className="w-full rounded-lg max-h-[400px] object-contain bg-black" />
+          </div>
+        );
+      }
+
+      return (
+        <div key={`img-${idx}`} className="my-4 rounded-xl overflow-hidden border border-sky-500/30 bg-slate-950 p-2 shadow-2xl">
+          <img src={imageUrl} alt={altText} className="w-full rounded-lg max-h-[450px] object-cover bg-slate-900 mx-auto" />
+          {altText && <p className="text-[10px] text-slate-400 font-mono-tech mt-2 text-center">// {altText}</p>}
+        </div>
+      );
+    }
+
+    if (trimmed.startsWith('### ')) {
+      return <h4 key={`h3-${idx}`} className="text-xs font-bold text-sky-400 mt-5 mb-2 font-mono-tech uppercase tracking-wider">{parseInlineStyles(trimmed.slice(4))}</h4>;
+    }
+    if (trimmed.startsWith('## ')) {
+      return <h3 key={`h2-${idx}`} className="text-sm sm:text-base font-bold text-white mt-6 mb-2 font-sans border-b border-sky-950/60 pb-1.5">{parseInlineStyles(trimmed.slice(3))}</h3>;
+    }
+    if (trimmed.startsWith('# ')) {
+      return <h2 key={`h1-${idx}`} className="text-base sm:text-lg font-bold text-white mt-7 mb-3 font-sans border-b border-sky-950/80 pb-2">{parseInlineStyles(trimmed.slice(2))}</h2>;
+    }
+
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      return (
+        <ul key={`ul-${idx}`} className="list-disc pl-5 my-1.5 text-slate-200">
+          <li className="font-sans text-xs sm:text-sm leading-relaxed">{parseInlineStyles(trimmed.slice(2))}</li>
+        </ul>
+      );
+    }
+
+    const numListMatch = trimmed.match(/^(\d+)\.\s(.*)/);
+    if (numListMatch) {
+      const num = numListMatch[1];
+      const rest = numListMatch[2];
+      return (
+        <ol key={`ol-${idx}`} className="list-decimal pl-5 my-1.5 text-slate-200">
+          <li value={num} className="font-sans text-xs sm:text-sm leading-relaxed">{parseInlineStyles(rest)}</li>
+        </ol>
+      );
+    }
+
+    if (trimmed.startsWith('> ')) {
+      return (
+        <blockquote key={`quote-${idx}`} className="border-l-2 border-amber-400/80 bg-slate-900/60 p-3 rounded-r-lg italic my-3 text-slate-200 font-sans text-xs sm:text-sm">
+          {parseInlineStyles(trimmed.slice(2))}
+        </blockquote>
+      );
+    }
+
+    return (
+      <p key={`p-${idx}`} className="text-slate-200 text-xs sm:text-sm leading-relaxed mb-3 font-sans">
+        {parseInlineStyles(line)}
+      </p>
+    );
+  });
+};
 export const SocialShareBar: React.FC<{ title: string; text?: string; url?: string }> = ({ title, text, url }) => {
   const [copied, setCopied] = useState(false);
   const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
@@ -363,8 +472,8 @@ export const WorkshopModal: React.FC<WorkshopModalProps> = ({ data, onClose }) =
                               </span>
                               <span>{log.date}</span>
                             </div>
-                            <div className="leading-relaxed space-y-2 text-slate-100 whitespace-pre-wrap font-sans text-xs sm:text-sm my-2">
-                              {log.content}
+                            <div className="leading-relaxed text-slate-100 font-sans text-xs sm:text-sm my-2">
+                              {renderFormattedContent(log.content)}
                             </div>
                             {log.tags && log.tags.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-slate-800/80">
@@ -400,9 +509,9 @@ export const WorkshopModal: React.FC<WorkshopModalProps> = ({ data, onClose }) =
                   <div className="text-sky-400 font-bold mb-1 text-[11px] uppercase tracking-wider flex items-center">
                     <Cpu size={14} className="mr-1.5" /> Technical Specification Overview
                   </div>
-                  <p className="font-sans text-xs text-slate-300 leading-relaxed">
-                    {data.fullDetails.overview}
-                  </p>
+                  <div className="font-sans text-xs text-slate-300 leading-relaxed">
+                    {renderFormattedContent(data.fullDetails.overview)}
+                  </div>
                 </div>
               )}
 
