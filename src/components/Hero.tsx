@@ -9,7 +9,11 @@ const HERO_PHRASES = [
   "Build. Break. Learn. Repeat."
 ];
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  onExploreWorkshop?: () => void;
+}
+
+const Hero: React.FC<HeroProps> = ({ onExploreWorkshop }) => {
   const { visitorName } = useVisitor();
   const [typedText, setTypedText] = useState("");
   const [phraseIndex, setPhraseIndex] = useState(0);
@@ -200,6 +204,12 @@ const Hero: React.FC = () => {
           <div className="flex flex-wrap gap-4 pt-2">
             <a 
               href="#workshop" 
+              onClick={(e) => {
+                if (onExploreWorkshop) {
+                  e.preventDefault();
+                  onExploreWorkshop();
+                }
+              }}
               className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-mono-tech font-bold uppercase tracking-wider text-xs px-6 py-3.5 rounded-lg transition-all flex items-center shadow-lg shadow-sky-500/10"
             >
               <Code size={16} className="mr-2" />

@@ -1,7 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Terminal, Cpu, HardDrive, Compass, BookOpen, Layers, Lightbulb } from 'lucide-react';
 
-const About: React.FC = () => {
+interface AboutProps {
+  onOpenModal?: (title: string, content: React.ReactNode, subtitle?: string) => void;
+}
+
+const About: React.FC<AboutProps> = ({ onOpenModal }) => {
   const [mousePosPct, setMousePosPct] = useState({ x: 50, y: 50 });
   const [isHovered, setIsHovered] = useState(false);
   const [trail, setTrail] = useState<{ x: number; y: number; id: number }[]>([]);
@@ -283,7 +287,28 @@ const About: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             {/* Hardware Card */}
-            <div className="panel-workshop p-5 rounded-xl border-sky-500/10 hover:border-sky-500/30 transition-all">
+            <div 
+              onClick={() => {
+                if (onOpenModal) {
+                  onOpenModal(
+                    "01. Hardware & Embedded Systems",
+                    <div className="space-y-4 font-mono-tech text-sm text-slate-300">
+                      <p className="text-sky-400">// Microcontrollers & Physical Hardware Drawer</p>
+                      <ul className="space-y-2 border-l-2 border-sky-500/30 pl-4">
+                        <li>• ESP32 / ESP8266 Microcontrollers (Dual-core 240MHz, Wi-Fi & Bluetooth)</li>
+                        <li>• Arduino & PlatformIO Prototyping Ecosystem</li>
+                        <li>• LoRa SX1278 Radio Transceiver Modules (Off-grid messaging)</li>
+                        <li>• I2C, SPI, UART, & CAN Bus Communication Protocols</li>
+                        <li>• Sensor Telemetry Integration (IMUs, BME280, OLED SSD1306)</li>
+                        <li>• Basic Circuit Diagnostics & Soldering Hardware</li>
+                      </ul>
+                    </div>,
+                    "PARTS DRAWER 01"
+                  );
+                }
+              }}
+              className="panel-workshop p-5 rounded-xl border-sky-500/10 hover:border-sky-500/40 cursor-pointer transition-all hover:scale-[1.02]"
+            >
               <div className="flex items-center space-x-3 mb-4">
                 <div className="p-2 bg-sky-950/50 rounded-lg border border-sky-500/20">
                   <Cpu size={16} className="text-sky-400" />
@@ -300,7 +325,27 @@ const About: React.FC = () => {
             </div>
 
             {/* Software Card */}
-            <div className="panel-workshop p-5 rounded-xl border-sky-500/10 hover:border-sky-500/30 transition-all">
+            <div 
+              onClick={() => {
+                if (onOpenModal) {
+                  onOpenModal(
+                    "02. Software Architecture",
+                    <div className="space-y-4 font-mono-tech text-sm text-slate-300">
+                      <p className="text-sky-400">// Full-stack & Embedded Software Drawer</p>
+                      <ul className="space-y-2 border-l-2 border-sky-500/30 pl-4">
+                        <li>• TypeScript & JavaScript (React 18, Next.js, Node.js)</li>
+                        <li>• C / C++ Firmware (FreeRTOS Tasks, Memory Management)</li>
+                        <li>• Python (Data Analysis, Automation Scripts, FastAPI)</li>
+                        <li>• RESTful & WebSocket Real-time Protocol Endpoints</li>
+                        <li>• Git Version Control & CI/CD Pipelines</li>
+                      </ul>
+                    </div>,
+                    "PARTS DRAWER 02"
+                  );
+                }
+              }}
+              className="panel-workshop p-5 rounded-xl border-sky-500/10 hover:border-sky-500/40 cursor-pointer transition-all hover:scale-[1.02]"
+            >
               <div className="flex items-center space-x-3 mb-4">
                 <div className="p-2 bg-sky-950/50 rounded-lg border border-sky-500/20">
                   <Terminal size={16} className="text-sky-400" />
@@ -317,7 +362,26 @@ const About: React.FC = () => {
             </div>
 
             {/* Artificial Intelligence Card */}
-            <div className="panel-workshop p-5 rounded-xl border-sky-500/10 hover:border-sky-500/30 transition-all">
+            <div 
+              onClick={() => {
+                if (onOpenModal) {
+                  onOpenModal(
+                    "03. Artificial Intelligence & Edge Logic",
+                    <div className="space-y-4 font-mono-tech text-sm text-slate-300">
+                      <p className="text-amber-400">// AI Models & Neural Orchestration Drawer</p>
+                      <ul className="space-y-2 border-l-2 border-amber-500/30 pl-4">
+                        <li>• Prompt Design Patterns & Multi-agent Systems</li>
+                        <li>• OpenAI & Anthropic SDK Integrations</li>
+                        <li>• Vector Store Embeddings & RAG Knowledge Pipelines</li>
+                        <li>• Local LLM Models (Ollama, Llama-3, TinyLlama on Edge)</li>
+                      </ul>
+                    </div>,
+                    "PARTS DRAWER 03"
+                  );
+                }
+              }}
+              className="panel-workshop p-5 rounded-xl border-sky-500/10 hover:border-sky-500/40 cursor-pointer transition-all hover:scale-[1.02]"
+            >
               <div className="flex items-center space-x-3 mb-4">
                 <div className="p-2 bg-sky-950/50 rounded-lg border border-sky-500/20">
                   <HardDrive size={16} className="text-sky-400" />

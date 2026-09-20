@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Linkedin, Github, MessageSquare, Terminal, Send, Loader2 } from 'lucide-react';
 
-const Contact: React.FC = () => {
+interface ContactProps {
+  onOpenTerminal?: () => void;
+}
+
+const Contact: React.FC<ContactProps> = ({ onOpenTerminal }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -301,12 +305,24 @@ const Contact: React.FC = () => {
               </div>
             </div>
 
-            {/* Availability */}
-            <div className="panel-workshop p-5 rounded-xl border-amber-500/20 bg-slate-900/40 text-xs">
-              <h4 className="font-mono-tech font-bold text-amber-500 uppercase mb-2">// COLLAB_STATUS</h4>
-              <p className="text-slate-400 leading-relaxed font-sans">
-                I am currently open to internships, active hardware/software project collaborations, and exploratory systems testing. Let's build.
-              </p>
+            {/* Availability & Terminal Trigger */}
+            <div className="panel-workshop p-5 rounded-xl border-amber-500/20 bg-slate-900/40 text-xs flex flex-col justify-between space-y-4">
+              <div>
+                <h4 className="font-mono-tech font-bold text-amber-500 uppercase mb-2">// COLLAB_STATUS</h4>
+                <p className="text-slate-400 leading-relaxed font-sans">
+                  I am currently open to internships, active hardware/software project collaborations, and exploratory systems testing. Let's build.
+                </p>
+              </div>
+
+              {onOpenTerminal && (
+                <button
+                  onClick={onOpenTerminal}
+                  className="w-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 font-mono-tech uppercase text-xs font-bold py-2.5 px-4 rounded-lg flex items-center justify-center transition-all shadow-md"
+                >
+                  <Terminal size={14} className="mr-2 text-sky-400" />
+                  Launch Terminal.exe Console (/help)
+                </button>
+              )}
             </div>
 
           </div>

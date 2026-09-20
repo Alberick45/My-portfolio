@@ -3,9 +3,10 @@ import { Menu, X, Terminal, Cpu } from 'lucide-react';
 
 interface HeaderProps {
   onOpenTerminal: () => void;
+  onNavigateSection?: (sectionId: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onOpenTerminal }) => {
+const Header: React.FC<HeaderProps> = ({ onOpenTerminal, onNavigateSection }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -22,6 +23,14 @@ const Header: React.FC<HeaderProps> = ({ onOpenTerminal }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleNavClick = (sectionId: string, e: React.MouseEvent) => {
+    if (onNavigateSection) {
+      e.preventDefault();
+      onNavigateSection(sectionId);
+    }
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 font-mono-tech ${
       isScrolled 
@@ -30,7 +39,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenTerminal }) => {
     }`}>
       <div className="container mx-auto px-4 md:px-6">
         <nav className="flex justify-between items-center bg-slate-900/60 border border-sky-950/50 rounded-xl px-4 py-2.5 shadow-lg backdrop-blur-sm">
-          <a href="/#" className="flex items-center space-x-2 text-lg font-bold text-sky-400 tracking-wider">
+          <a
+            href="/#"
+            onClick={(e) => handleNavClick('home', e)}
+            className="flex items-center space-x-2 text-lg font-bold text-sky-400 tracking-wider"
+          >
             <Cpu size={18} className="text-sky-400 animate-pulse" />
             <span>ALBERT<span className="text-amber-400">.DEV</span></span>
             <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-normal uppercase tracking-normal hidden sm:inline-block">Workshop v2.0</span>
@@ -47,15 +60,18 @@ const Header: React.FC<HeaderProps> = ({ onOpenTerminal }) => {
           
           {/* Desktop menu */}
           <div className="hidden md:flex items-center space-x-6">
-            <a href="/#" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Home</a>
-            <a href="/#about" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">About</a>
-            <a href="/#workshop" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Workshop</a>
-            <a href="/#journal" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Journal</a>
-            <a href="/#roadmap" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Roadmap</a>
-            <a href="/#contact" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Contact</a>
+            <a href="/#" onClick={(e) => handleNavClick('home', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Home</a>
+            <a href="/#about" onClick={(e) => handleNavClick('about', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">About</a>
+            <a href="/#workshop" onClick={(e) => handleNavClick('workshop', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Workshop</a>
+            <a href="/#journal" onClick={(e) => handleNavClick('journal', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Journal</a>
+            <a href="/#roadmap" onClick={(e) => handleNavClick('roadmap', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Roadmap</a>
+            <a href="/#contact" onClick={(e) => handleNavClick('contact', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Contact</a>
             
             <button 
-              onClick={onOpenTerminal}
+              onClick={() => {
+                if (onNavigateSection) onNavigateSection('contact');
+                onOpenTerminal();
+              }}
               className="border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 px-3.5 py-1.5 rounded-lg text-xs uppercase tracking-wide flex items-center transition-all"
             >
               <Terminal size={12} className="mr-1.5" />
@@ -67,14 +83,15 @@ const Header: React.FC<HeaderProps> = ({ onOpenTerminal }) => {
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden mt-2 bg-slate-900 border border-sky-950/80 rounded-xl p-4 flex flex-col space-y-3.5 shadow-2xl">
-            <a href="/#" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide" onClick={() => setIsMenuOpen(false)}>Home</a>
-            <a href="/#about" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide" onClick={() => setIsMenuOpen(false)}>About</a>
-            <a href="/#workshop" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide" onClick={() => setIsMenuOpen(false)}>Workshop</a>
-            <a href="/#journal" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide" onClick={() => setIsMenuOpen(false)}>Journal</a>
-            <a href="/#roadmap" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide" onClick={() => setIsMenuOpen(false)}>Roadmap</a>
-            <a href="/#contact" className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide" onClick={() => setIsMenuOpen(false)}>Contact</a>
+            <a href="/#" onClick={(e) => handleNavClick('home', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Home</a>
+            <a href="/#about" onClick={(e) => handleNavClick('about', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">About</a>
+            <a href="/#workshop" onClick={(e) => handleNavClick('workshop', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Workshop</a>
+            <a href="/#journal" onClick={(e) => handleNavClick('journal', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Journal</a>
+            <a href="/#roadmap" onClick={(e) => handleNavClick('roadmap', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Roadmap</a>
+            <a href="/#contact" onClick={(e) => handleNavClick('contact', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Contact</a>
             <button 
               onClick={() => {
+                if (onNavigateSection) onNavigateSection('contact');
                 onOpenTerminal();
                 setIsMenuOpen(false);
               }}

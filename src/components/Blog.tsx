@@ -191,7 +191,12 @@ const renderFormattedContent = (content: string) => {
   });
 };
 
-const Blog: React.FC<{ teaser?: boolean }> = ({ teaser = false }) => {
+interface BlogProps {
+  teaser?: boolean;
+  onOpenModal?: (title: string, content: React.ReactNode, subtitle?: string) => void;
+}
+
+const Blog: React.FC<BlogProps> = ({ teaser = false, onOpenModal }) => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);

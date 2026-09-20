@@ -115,7 +115,11 @@ const DEFAULT_PROJECTS: BuildLog[] = [
   }
 ];
 
-const Projects: React.FC = () => {
+interface ProjectsProps {
+  onOpenModal?: (title: string, content: React.ReactNode, subtitle?: string) => void;
+}
+
+const Projects: React.FC<ProjectsProps> = ({ onOpenModal }) => {
   const [projects, setProjects] = useState<BuildLog[]>(() => {
     const saved = localStorage.getItem('workshop_projects');
     if (saved) {
@@ -333,6 +337,73 @@ const Projects: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Failed Prototypes Crate Card */}
+              <div 
+                onClick={(e) => {
+                  if (onOpenModal) {
+                    onOpenModal(
+                      "FAILED PROTOTYPES CRATE",
+                      <div className="space-y-4 font-mono-tech text-xs text-slate-300">
+                        <p className="text-amber-400">// GRAVEYARD OF LEARNING ITERATIONS</p>
+                        <p className="text-slate-400 font-sans text-sm">
+                          "Failure is the essential input telemetry required to calibrate real engineering success. Here are key prototype failures from the bench:"
+                        </p>
+                        <div className="space-y-3">
+                          <div className="p-3 bg-slate-900 border border-amber-500/30 rounded-lg">
+                            <div className="flex justify-between text-amber-300 font-bold mb-1">
+                              <span>1. Fried ESP8266 LDO Regulator</span>
+                              <span className="text-[10px] text-amber-500">OVERVOLTAGE</span>
+                            </div>
+                            <p className="text-slate-400">Fed 12V directly into 3.3V logic line during a late-night bench session. Magic smoke escaped instantly.</p>
+                            <p className="text-sky-400 text-[10px] mt-1">Lesson learned: Always verify power rail voltages with multimeter probes before inserting microcontrollers.</p>
+                          </div>
+                          <div className="p-3 bg-slate-900 border border-amber-500/30 rounded-lg">
+                            <div className="flex justify-between text-amber-300 font-bold mb-1">
+                              <span>2. Reversed Polarity MOSFET Driver</span>
+                              <span className="text-[10px] text-amber-500">SCHEMATIC_ERROR</span>
+                            </div>
+                            <p className="text-slate-400">Swapped Source and Drain pins on N-Channel MOSFET driver board. Motor stayed latched ON continuously.</p>
+                            <p className="text-sky-400 text-[10px] mt-1">Lesson learned: Print PCB layouts at 1:1 scale on paper and test component pinouts before ordering board runs.</p>
+                          </div>
+                          <div className="p-3 bg-slate-900 border border-amber-500/30 rounded-lg">
+                            <div className="flex justify-between text-amber-300 font-bold mb-1">
+                              <span>3. Cracked PETG Sensor Enclosure</span>
+                              <span className="text-[10px] text-amber-500">INFILL_FAILURE</span>
+                            </div>
+                            <p className="text-slate-400">Used 10% grid infill for an outdoor weather-proof housing; walls sheared under M3 bolt torque pressure.</p>
+                            <p className="text-sky-400 text-[10px] mt-1">Lesson learned: Load-bearing mechanical mounting lugs require 4+ perimeters and 100% solid infill regions.</p>
+                          </div>
+                        </div>
+                      </div>,
+                      "WORKSHOP GRAVEYARD [SYS_REF_CRATE_01]"
+                    );
+                  }
+                }}
+                className="panel-workshop p-6 rounded-xl border-amber-500/30 bg-amber-950/10 hover:border-amber-400 cursor-pointer transition-all duration-300 group flex flex-col justify-between"
+              >
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start">
+                    <span className="font-mono-tech text-[10px] text-amber-400 uppercase tracking-wider">// GRAVEYARD</span>
+                    <span className="text-[10px] font-mono-tech px-2 py-0.5 rounded border bg-amber-500/10 border-amber-500/30 text-amber-400">
+                      CRATE: FAILED_PROTOTYPES
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white group-hover:text-amber-300 transition-colors flex items-center">
+                      <Flame className="w-5 h-5 text-amber-400 mr-2 animate-pulse" />
+                      Failed Prototypes Crate
+                    </h3>
+                    <p className="text-slate-400 text-xs mt-2 leading-relaxed">
+                      A physical crate containing fried regulators, sheared PETG prints, reversed MOSFETs, and shorted LoRa traces. Click to inspect the failures that built my engineering foundation.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-6 pt-4 border-t border-amber-950/60 flex justify-between items-center text-xs font-mono-tech text-amber-400">
+                  <span>INSPECT CRATE ITEMS</span>
+                  <ExternalLink size={14} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
               {projects.map((project) => (
                 <div 
                   key={project.id}

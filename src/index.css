@@ -117,4 +117,16 @@ body {
   .delay-100, .delay-200, .delay-300, .delay-400, .delay-500, .delay-600, .delay-700 {
     transition-delay: 0ms !important;
   }
-}
+}
+
+/* 3D Transform Utilities */
+.preserve-3d {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+

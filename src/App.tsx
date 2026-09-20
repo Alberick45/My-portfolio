@@ -10,7 +10,9 @@ import Footer from './components/Footer';
 import TerminalConsole from './components/TerminalConsole';
 import Loader from './components/Loader';
 import DoorbellIntro from './components/DoorbellIntro';
+import { SceneStage } from './components/3d/SceneStage';
 import { VisitorProvider } from './context/VisitorContext';
+import { WORKSHOP_STATIONS, ROOM_CONFIG } from './config/workshopConfig';
 
 function PortfolioApp() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -28,87 +30,23 @@ function PortfolioApp() {
     window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('pushstate-changed', handleLocationChange);
 
-    // Global interceptor for client-side navigation
-    const handleAnchorClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest('a');
-      
-      if (anchor && anchor.href) {
-        const url = new URL(anchor.href);
-        if (url.origin === window.location.origin) {
-          const path = url.pathname;
-          const hash = url.hash;
-
-          // If moving to/from journal or across pages
-          if (path === '/journal' || (path === '/' && window.location.pathname !== '/')) {
-            e.preventDefault();
-            window.history.pushState({}, '', path + hash);
-            window.dispatchEvent(new Event('pushstate-changed'));
-
-            // If navigating back to homepage with a hash, scroll to that element
-            if (path === '/' && hash) {
-              setTimeout(() => {
-                const element = document.getElementById(hash.substring(1));
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
-              }, 150);
-            }
-          } else if (path === '/' && hash) {
-            // Already on home page, handle smooth scroll
-            e.preventDefault();
-            const element = document.getElementById(hash.substring(1));
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth' });
-            }
-          }
-        }
-      }
-    };
-
-    document.addEventListener('click', handleAnchorClick);
-
     return () => {
       window.removeEventListener('popstate', handleLocationChange);
       window.removeEventListener('pushstate-changed', handleLocationChange);
-      document.removeEventListener('click', handleAnchorClick);
     };
   }, []);
 
-  // Intersection Observer for scroll reveal animations
-  useEffect(() => {
-    if (introStage !== 'ready') return;
-
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px 0px -10% 0px', // triggers when element is 10% inside the viewport
-      threshold: 0.02
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('reveal-active');
-        } else {
-          // Reset when scrolling away to make scroll transition exciting on repeat
-          entry.target.classList.remove('reveal-active');
-        }
-      });
-    }, observerOptions);
-
-    const observeElements = () => {
-      const elements = document.querySelectorAll('.reveal-element');
-      elements.forEach(el => observer.observe(el));
-    };
-
-    // Wait slightly for components to fully paint
-    const timer = setTimeout(observeElements, 150);
-
-    return () => {
-      clearTimeout(timer);
-      observer.disconnect();
-    };
-  }, [currentPath, introStage]);
+  const handleNavigateSection = (sectionId: string) => {
+    const idx = WORKSHOP_STATIONS.findIndex(s => s.id === sectionId);
+    if (idx !== -1) {
+      const targetCameraZ = -WORKSHOP_STATIONS[idx].z;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (maxScroll > 0) {
+        const targetScrollY = (targetCameraZ / ROOM_CONFIG.maxCameraZ) * maxScroll;
+        window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <>
@@ -121,24 +59,33 @@ function PortfolioApp() {
       )}
 
       <div className="font-sans min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-sky-500/30 selection:text-sky-200">
-        <div>
-          <Header onOpenTerminal={() => setIsTerminalOpen(true)} />
-          <main>
-            {currentPath === '/journal' ? (
+        {currentPath === '/journal' ? (
+          <div>
+            <Header 
+              onOpenTerminal={() => setIsTerminalOpen(true)} 
+              onNavigateSection={handleNavigateSection}
+            />
+            <main className="pt-24">
               <Blog teaser={false} />
-            ) : (
-              <>
-                <Hero />
-                <About />
-                <Projects />
-                <Blog teaser={true} />
-                <Goals />
-                <Contact />
-              </>
-            )}
-          </main>
-        </div>
-        <Footer />
+            </main>
+            <Footer onNavigateSection={handleNavigateSection} />
+          </div>
+        ) : (
+          <div>
+            {/* Interactive Z-Axis 3D Workshop Stage */}
+            <SceneStage onOpenTerminal={() => setIsTerminalOpen(true)} />
+
+            {/* Accessible hidden semantic DOM tree for SEO crawlers and screen readers */}
+            <main className="sr-only" aria-hidden="true">
+              <Hero />
+              <About />
+              <Projects />
+              <Blog teaser={true} />
+              <Goals />
+              <Contact />
+            </main>
+          </div>
+        )}
         <TerminalConsole isOpen={isTerminalOpen} onClose={() => setIsTerminalOpen(false)} />
       </div>
     </>
