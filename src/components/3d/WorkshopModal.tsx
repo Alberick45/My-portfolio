@@ -61,10 +61,23 @@ export const renderFormattedContent = (content: string) => {
       }
 
       return (
-        <div key={`img-${idx}`} className="my-4 rounded-xl overflow-hidden border border-sky-500/30 bg-slate-950 p-2 shadow-2xl">
-          <img src={imageUrl} alt={altText} className="w-full rounded-lg max-h-[450px] object-cover bg-slate-900 mx-auto" />
-          {altText && <p className="text-[10px] text-slate-400 font-mono-tech mt-2 text-center">// {altText}</p>}
-        </div>
+        <a 
+          key={`img-${idx}`} 
+          href={imageUrl} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          onClick={(e) => e.stopPropagation()}
+          className="block my-4 group cursor-zoom-in"
+        >
+          <div className="rounded-xl overflow-hidden border border-sky-500/30 bg-slate-950 p-2 shadow-2xl group-hover:border-sky-400/80 transition-all">
+            <img src={imageUrl} alt={altText} className="w-full rounded-lg max-h-[480px] object-contain bg-slate-900 mx-auto" />
+            {altText && (
+              <p className="text-[10px] text-slate-400 font-mono-tech mt-2 text-center flex items-center justify-center gap-1 group-hover:text-sky-300">
+                <ExternalLink size={10} /> // {altText} (Click to open full high-res image)
+              </p>
+            )}
+          </div>
+        </a>
       );
     }
 
@@ -112,9 +125,12 @@ export const renderFormattedContent = (content: string) => {
     );
   });
 };
+
 export const SocialShareBar: React.FC<{ title: string; text?: string; url?: string }> = ({ title, text, url }) => {
   const [copied, setCopied] = useState(false);
-  const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+  const rawUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+  // Format share URL for clean clickability on WhatsApp/X/LinkedIn
+  const shareUrl = rawUrl.includes('localhost') ? 'https://albert.dev/' : rawUrl;
   const shareText = text || title;
 
   const handleNativeShare = async (e: React.MouseEvent) => {
@@ -123,7 +139,7 @@ export const SocialShareBar: React.FC<{ title: string; text?: string; url?: stri
       try {
         await navigator.share({
           title: title,
-          text: shareText,
+          text: `${title} — Albert Baiden-Amissah`,
           url: shareUrl,
         });
       } catch (err) {
@@ -135,14 +151,14 @@ export const SocialShareBar: React.FC<{ title: string; text?: string; url?: stri
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(`${title} — ${shareUrl}`);
+      navigator.clipboard.writeText(`${title} — Albert Baiden-Amissah\n${shareUrl}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
   const encodedUrl = encodeURIComponent(shareUrl);
-  const encodedText = encodeURIComponent(`${title} — Albert Baiden-Amissah (A3PK Labs)`);
+  const encodedText = encodeURIComponent(`${title} — Albert Baiden-Amissah`);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 pt-3 mt-3 border-t border-slate-800/80 font-mono-tech text-[10px]">
