@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Terminal as TerminalIcon, X } from 'lucide-react';
 import { useVisitor } from '../context/VisitorContext';
+import { WORKSHOP_DATA } from '../config/workshopData';
 
 interface TerminalConsoleProps {
   isOpen: boolean;
@@ -124,19 +125,18 @@ const TerminalConsole: React.FC<TerminalConsoleProps> = ({ isOpen, onClose }) =>
         break;
 
       case 'journal':
-        const storedPosts = localStorage.getItem('blog_posts');
-        let postsList = [];
+        const storedPosts = localStorage.getItem('albert-portfolio-posts') || localStorage.getItem('blog_posts');
+        let postsList: any[] = [];
         if (storedPosts) {
           try { postsList = JSON.parse(storedPosts); } catch(e){}
         }
-        newHistory.push({ text: '// RECENT LAB ENTRIES //', type: 'output' });
-        if (postsList.length === 0) {
-          newHistory.push({ text: '  - No log entries found. Sudo login to write first post.', type: 'output' });
-        } else {
-          postsList.slice(0, 3).forEach((p: any) => {
-            newHistory.push({ text: `  - [${p.date}] ${p.title} (${p.category})`, type: 'output' });
-          });
+        if (!postsList || postsList.length === 0) {
+          postsList = WORKSHOP_DATA.journal;
         }
+        newHistory.push({ text: '// RECENT LAB ENTRIES & BUILD LOGS //', type: 'output' });
+        postsList.forEach((p: any) => {
+          newHistory.push({ text: `  - [${p.date}] ${p.title} (${p.category || 'Journal'})`, type: 'output' });
+        });
         break;
 
       case 'resume':

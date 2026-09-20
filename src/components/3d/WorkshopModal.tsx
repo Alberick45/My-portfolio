@@ -268,12 +268,20 @@ export const WorkshopModal: React.FC<WorkshopModalProps> = ({ data, onClose }) =
 
                         {/* Expanded Log Full Article View */}
                         {isSelected && (
-                          <div className="mt-3 pt-3 border-t border-sky-950 font-sans text-xs text-slate-200 animate-fade-in bg-slate-950/90 p-3 rounded border border-sky-900/40">
-                            <p className="leading-relaxed mb-3">{log.content}</p>
-                            {log.tags && (
-                              <div className="flex flex-wrap gap-1 mt-2">
+                          <div className="mt-3 pt-3 border-t border-sky-950 font-sans text-xs text-slate-100 animate-fade-in bg-slate-950/95 p-4 rounded-xl border border-sky-500/40 shadow-[0_0_25px_rgba(56,189,248,0.15)]">
+                            <div className="font-mono-tech text-[10px] text-sky-400 font-bold mb-2 flex justify-between items-center border-b border-sky-950 pb-1.5">
+                              <span className="flex items-center gap-1.5">
+                                <BookOpen size={12} className="text-amber-400" /> FULL LOG RECORD
+                              </span>
+                              <span>{log.date}</span>
+                            </div>
+                            <div className="leading-relaxed space-y-2 text-slate-100 whitespace-pre-wrap font-sans text-xs sm:text-sm my-2">
+                              {log.content}
+                            </div>
+                            {log.tags && log.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-slate-800/80">
                                 {log.tags.map((t, idx) => (
-                                  <span key={idx} className="font-mono-tech text-[9px] bg-slate-800 text-sky-300 px-1.5 py-0.5 rounded">
+                                  <span key={idx} className="font-mono-tech text-[10px] bg-sky-950 border border-sky-800 text-sky-300 px-2 py-0.5 rounded">
                                     #{t}
                                   </span>
                                 ))}

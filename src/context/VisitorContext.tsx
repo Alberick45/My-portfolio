@@ -3,11 +3,22 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 // 30 minutes in milliseconds
 const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
 
+// Helper function to sanitize user input against XSS
+const sanitizeInput = (input: string): string => {
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .trim()
+    .slice(0, 30);
+};
+
 interface VisitorContextType {
   visitorName: string;
   visitorEmail: string;
   hasVisited: boolean;
-  setVisitor: (name: string, email?: string) => void;
+  setVisitor: (name: string) => void;
   clearVisitorSession: () => void;
 }
 
@@ -20,29 +31,26 @@ const VisitorContext = createContext<VisitorContextType>({
 });
 
 export const VisitorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Helper to check if stored session is still valid (less than 30 mins inactive)
+  // Purge any legacy email stored in local storage for privacy & security
+  useEffect(() => {
+    localStorage.removeItem('visitor_email');
+  }, []);
+
   const isSessionValid = (): boolean => {
     const lastActiveStr = localStorage.getItem('visitor_last_active');
     const storedName = localStorage.getItem('visitor_name');
     if (!storedName) return false;
-
-    if (!lastActiveStr) return true; // Legacy entry fallback
+    if (!lastActiveStr) return true;
 
     const lastActive = parseInt(lastActiveStr, 10);
     const now = Date.now();
-    
-    // Expired if inactive for more than 30 minutes
-    if (now - lastActive > INACTIVITY_TIMEOUT_MS) {
-      return false;
-    }
-    return true;
+    return now - lastActive <= INACTIVITY_TIMEOUT_MS;
   };
 
   const [visitorName, setVisitorName] = useState<string>(() => {
     if (isSessionValid()) {
-      return localStorage.getItem('visitor_name') || '';
+      return sanitizeInput(localStorage.getItem('visitor_name') || '');
     } else {
-      // Clear expired session on boot
       localStorage.removeItem('visitor_name');
       localStorage.removeItem('visitor_email');
       localStorage.removeItem('visitor_last_active');
@@ -50,52 +58,37 @@ export const VisitorProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   });
 
-  const [visitorEmail, setVisitorEmail] = useState<string>(() => {
-    if (isSessionValid()) {
-      return localStorage.getItem('visitor_email') || '';
-    }
-    return '';
-  });
-
   const [hasVisited, setHasVisited] = useState<boolean>(() => {
     return isSessionValid();
   });
 
-  const setVisitor = (name: string, email: string = '') => {
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
+  const setVisitor = (name: string) => {
+    const sanitized = sanitizeInput(name);
     const nowStr = Date.now().toString();
 
-    setVisitorName(trimmedName);
-    setVisitorEmail(trimmedEmail);
+    setVisitorName(sanitized);
     setHasVisited(true);
 
-    if (trimmedName) {
-      localStorage.setItem('visitor_name', trimmedName);
+    if (sanitized) {
+      localStorage.setItem('visitor_name', sanitized);
       localStorage.setItem('visitor_last_active', nowStr);
-    }
-    if (trimmedEmail) {
-      localStorage.setItem('visitor_email', trimmedEmail);
     }
   };
 
   const clearVisitorSession = () => {
     setVisitorName('');
-    setVisitorEmail('');
     setHasVisited(false);
     localStorage.removeItem('visitor_name');
     localStorage.removeItem('visitor_email');
     localStorage.removeItem('visitor_last_active');
   };
 
-  // Activity tracker & periodic inactivity checker
   useEffect(() => {
     if (!visitorName) return;
 
     let lastUpdate = Date.now();
     localStorage.setItem('visitor_last_active', lastUpdate.toString());
 
-    // Throttle timestamp updates to once every 10 seconds on user interaction
     const updateActivity = () => {
       const now = Date.now();
       if (now - lastUpdate > 10000) {
@@ -109,13 +102,12 @@ export const VisitorProvider: React.FC<{ children: React.ReactNode }> = ({ child
       window.addEventListener(event, updateActivity, { passive: true });
     });
 
-    // Check inactivity status every 30 seconds
     const interval = setInterval(() => {
       const lastActiveStr = localStorage.getItem('visitor_last_active');
       if (lastActiveStr) {
         const lastActive = parseInt(lastActiveStr, 10);
         if (Date.now() - lastActive > INACTIVITY_TIMEOUT_MS) {
-          console.log("[SESSION] Visitor session expired due to 30 minutes of inactivity.");
+          console.log("[SESSION] Visitor session expired due to inactivity.");
           clearVisitorSession();
         }
       }
@@ -130,7 +122,7 @@ export const VisitorProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [visitorName]);
 
   return (
-    <VisitorContext.Provider value={{ visitorName, visitorEmail, hasVisited, setVisitor, clearVisitorSession }}>
+    <VisitorContext.Provider value={{ visitorName, visitorEmail: '', hasVisited, setVisitor, clearVisitorSession }}>
       {children}
     </VisitorContext.Provider>
   );

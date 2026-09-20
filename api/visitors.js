@@ -12,31 +12,41 @@ export default async function handler(req, res) {
     return res.status(405).json({ detail: 'Method not allowed' });
   }
 
-  const { name, email, timestamp, userAgent } = req.body || {};
-  if (!name) {
-    return res.status(400).json({ detail: 'Missing visitor name' });
+  const { name, timestamp } = req.body || {};
+  if (!name || typeof name !== 'string') {
+    return res.status(400).json({ detail: 'Missing or invalid visitor name' });
+  }
+
+  // Sanitize visitor name to prevent XSS / script injection attacks
+  const sanitizedName = name
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .trim()
+    .slice(0, 30);
+
+  if (!sanitizedName) {
+    return res.status(400).json({ detail: 'Invalid visitor name' });
   }
 
   const newEntry = {
     id: `vis_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
-    name,
-    email: email || '',
-    timestamp: timestamp || new Date().toISOString(),
-    userAgent: userAgent || ''
+    name: sanitizedName,
+    timestamp: timestamp || new Date().toISOString()
   };
 
   const token = process.env.GITHUB_TOKEN;
   const repo = process.env.GITHUB_REPO; // e.g. "Alberick45/My-portfolio"
 
   if (!token || !repo) {
-    console.warn("Server configuration warning: GITHUB_TOKEN or GITHUB_REPO env variables are missing. Logged entry in memory.");
+    console.warn("Server configuration warning: GITHUB_TOKEN or GITHUB_REPO env variables missing. Logging entry in ephemeral mode.");
     return res.status(200).json({ detail: 'Visitor logged (ephemeral mode)', entry: newEntry });
   }
 
   const githubUrl = `https://api.github.com/repos/${repo}/contents/public/visitors.json`;
 
   try {
-    // 1. Fetch current visitors.json from GitHub repository to append
     let currentVisitors = [];
     let sha = null;
 
@@ -60,10 +70,8 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. Append new visitor log
     currentVisitors.unshift(newEntry);
 
-    // Keep max 500 records
     if (currentVisitors.length > 500) {
       currentVisitors = currentVisitors.slice(0, 500);
     }
@@ -71,7 +79,7 @@ export default async function handler(req, res) {
     const fileContentBase64 = Buffer.from(JSON.stringify(currentVisitors, null, 2)).toString('base64');
     
     const putBody = {
-      message: `telemetry: log visitor doorbell entry for ${name}`,
+      message: `telemetry: log visitor entry for ${sanitizedName}`,
       content: fileContentBase64
     };
     if (sha) {
@@ -90,7 +98,7 @@ export default async function handler(req, res) {
     });
 
     if (putRes.ok) {
-      return res.status(200).json({ detail: 'Visitor logged successfully', entry: newEntry });
+      return res.status(200).json({ detail: 'Visitor logged securely', entry: newEntry });
     } else {
       const errText = await putRes.text();
       return res.status(putRes.status).json({ detail: `Failed to record visitor log to GitHub: ${errText}` });

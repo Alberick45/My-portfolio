@@ -693,11 +693,59 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                   depth={90}
                   ariaLabel="Journal Notebook Shelf"
                   onClick={() => {
-                    const latest = WORKSHOP_DATA.journal[0];
+                    let allJournals = WORKSHOP_DATA.journal;
+                    const stored = localStorage.getItem('albert-portfolio-posts');
+                    if (stored) {
+                      try {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                          allJournals = parsed.map((p: any) => ({
+                            id: p.id,
+                            title: p.title,
+                            date: p.date,
+                            readTime: p.readTime || '5 min read',
+                            category: p.category || 'Journal',
+                            summary: p.excerpt || (p.content ? p.content.slice(0, 150) + '...' : ''),
+                            bullets: [p.title, `Published: ${p.date}`, `Category: ${p.category || 'Development'}`],
+                            content: p.content,
+                            logEntries: [
+                              {
+                                id: `log-${p.id}`,
+                                date: p.date,
+                                title: p.title,
+                                abstract: p.excerpt || (p.content ? p.content.slice(0, 140) + '...' : ''),
+                                content: p.content,
+                                thumbnailType: (p.category === 'Hardware' ? 'oscilloscope' : p.category === 'Development' ? 'code' : 'vision') as any,
+                                tags: [p.category || 'Journal', p.readTime || '5 min read']
+                              }
+                            ]
+                          }));
+                        }
+                      } catch (e) {
+                        console.warn("Could not parse dynamic posts in 3D stage:", e);
+                      }
+                    }
+
+                    const latest = allJournals[0];
+                    const formattedLogs = allJournals.flatMap(j => 
+                      (j.logEntries && j.logEntries.length > 0) ? j.logEntries.map(l => ({
+                        ...l,
+                        content: l.content || j.content
+                      })) : [{
+                        id: j.id,
+                        date: j.date,
+                        title: j.title,
+                        abstract: j.summary,
+                        content: j.content,
+                        thumbnailType: (j.category === 'Hardware' ? 'oscilloscope' : j.category === 'Development' ? 'code' : j.category === 'Life & Tech' ? 'vision' : 'circuit') as any,
+                        tags: [j.category, j.readTime]
+                      }]
+                    );
+
                     setModalState({
                       isOpen: true,
                       title: latest.title,
-                      placard: `JOURNAL // ${latest.category}`,
+                      placard: `LOGBOOK // LAB JOURNAL (${allJournals.length} POSTS)`,
                       summary: latest.summary,
                       bullets: latest.bullets,
                       tags: ["JOURNAL", latest.category, latest.readTime],
@@ -709,7 +757,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                           `Category: ${latest.category}`
                         ]
                       },
-                      logEntries: WORKSHOP_DATA.journal.flatMap(j => j.logEntries || []),
+                      logEntries: formattedLogs,
                     });
                   }}
                   faceClassName="bg-slate-900/90 border-2 border-slate-400/40 shadow-[0_0_25px_rgba(255,255,255,0.15)] hover:border-white transition-all"

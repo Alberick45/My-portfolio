@@ -91,39 +91,24 @@ export const DoorbellIntro: React.FC<DoorbellIntroProps> = ({ onComplete }) => {
     }
   };
 
-  const handleNameSubmit = (e: React.FormEvent) => {
+  const handleNameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputName.trim()) return;
-
-    setStep('prompt_email');
-    setTimeout(() => {
-      emailInputRef.current?.focus();
-    }, 100);
-  };
-
-  const handleEmailSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setIsSubmitting(true);
-
     const finalName = inputName.trim() || visitorName || 'Guest Visitor';
-    const finalEmail = inputEmail.trim();
-
-    await triggerDoorOpen(finalName, finalEmail);
+    setIsSubmitting(true);
+    await triggerDoorOpen(finalName);
   };
 
-  const triggerDoorOpen = async (name: string, email: string) => {
-    setVisitor(name, email);
+  const triggerDoorOpen = async (name: string) => {
+    setVisitor(name);
 
-    // POST entry to backend API (/api/visitors)
+    // POST entry securely to backend API (/api/visitors) without email telemetry
     try {
       await fetch('/api/visitors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name,
-          email: email,
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent
+          timestamp: new Date().toISOString()
         })
       });
     } catch (err) {
@@ -210,50 +195,8 @@ export const DoorbellIntro: React.FC<DoorbellIntroProps> = ({ onComplete }) => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={!inputName.trim()}
+                  disabled={!inputName.trim() || isSubmitting}
                   className="flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs rounded-lg hover:brightness-110 disabled:opacity-40 transition-all shadow-md"
-                >
-                  <span>NEXT</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </form>
-          )}
-
-          {step === 'prompt_email' && (
-            <form onSubmit={handleEmailSubmit} className="p-5 rounded-xl bg-[#0b1322]/95 border border-sky-500/50 shadow-[0_0_30px_rgba(56,189,248,0.2)] space-y-4 backdrop-blur-md animate-slide-down">
-              <div className="flex items-center space-x-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
-                <Terminal className="w-4 h-4" />
-                <span>OPTIONAL_TELEMETRY</span>
-              </div>
-              <div>
-                <label className="block text-slate-300 text-xs mb-2">
-                  &gt; EMAIL (OPTIONAL, PRESS ENTER TO SKIP):
-                </label>
-                <div className="relative flex items-center">
-                  <span className="absolute left-3 text-sky-400 text-xs">&gt;</span>
-                  <input
-                    ref={emailInputRef}
-                    type="email"
-                    value={inputEmail}
-                    onChange={(e) => setInputEmail(e.target.value)}
-                    placeholder="alex@example.com"
-                    className="w-full pl-7 pr-4 py-2 bg-slate-950/80 border border-slate-700/60 rounded-lg text-white text-xs focus:outline-none focus:border-sky-400 transition-all"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <button
-                  type="button"
-                  onClick={() => handleEmailSubmit()}
-                  className="text-slate-400 hover:text-slate-200 text-xs text-left"
-                >
-                  [ Skip ]
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs rounded-lg hover:brightness-110 disabled:opacity-40 transition-all shadow-md"
                 >
                   <span>ENTER WORKSHOP</span>
                   <Check className="w-3.5 h-3.5" />
