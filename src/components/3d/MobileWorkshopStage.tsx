@@ -25,64 +25,64 @@ export const MOBILE_OBJECTS: MobileObjectConfig[] = [
     label: 'Figure at Desk',
     placard: 'ABOUT DOSSIER',
     accent: 'cyan',
-    pos: { x: 0, y: -20, z: 20 },
-    focusTransform: 'translate3d(0px, 40px, 120px) scale(1.35)'
+    pos: { x: 0, y: -10, z: 20 },
+    focusTransform: 'translate3d(0px, 35px, 140px) scale(1.4)'
   },
   {
     id: 'journal',
     label: 'Notebooks',
     placard: 'RESEARCH JOURNAL',
     accent: 'white',
-    pos: { x: -45, y: 70, z: 10 },
-    focusTransform: 'translate3d(60px, -60px, 140px) scale(1.4)'
+    pos: { x: -45, y: 65, z: 10 },
+    focusTransform: 'translate3d(60px, -60px, 150px) scale(1.45)'
   },
   {
     id: 'projects',
     label: 'Glass Shelves',
     placard: 'FINISHED PROJECTS',
     accent: 'cyan',
-    pos: { x: -80, y: -90, z: 60 },
-    focusTransform: 'translate3d(100px, 90px, 130px) scale(1.35)'
+    pos: { x: -75, y: -85, z: 50 },
+    focusTransform: 'translate3d(95px, 90px, 140px) scale(1.4)'
   },
   {
     id: 'mascot',
     label: 'Mascot OK-02',
     placard: 'MASCOT OK-02',
     accent: 'cyan',
-    pos: { x: -135, y: -35, z: 35 },
-    focusTransform: 'translate3d(140px, 40px, 140px) scale(1.45)'
+    pos: { x: -130, y: -30, z: 30 },
+    focusTransform: 'translate3d(140px, 40px, 150px) scale(1.45)'
   },
   {
     id: 'workstation',
     label: 'Workbench',
     placard: 'IN-PROGRESS BENCH',
     accent: 'amber',
-    pos: { x: 90, y: -70, z: 40 },
-    focusTransform: 'translate3d(-90px, 70px, 130px) scale(1.35)'
+    pos: { x: 85, y: -65, z: 35 },
+    focusTransform: 'translate3d(-90px, 70px, 140px) scale(1.4)'
   },
   {
     id: 'roadmap',
     label: 'Whiteboard',
     placard: 'ROADMAP & GOALS',
     accent: 'white',
-    pos: { x: -115, y: -130, z: 90 },
-    focusTransform: 'translate3d(120px, 130px, 130px) scale(1.35)'
+    pos: { x: -110, y: -125, z: 85 },
+    focusTransform: 'translate3d(125px, 130px, 140px) scale(1.4)'
   },
   {
     id: 'terminal',
     label: 'CRT Terminal',
     placard: 'TERMINAL & CONTACT',
     accent: 'white',
-    pos: { x: 130, y: 15, z: 20 },
-    focusTransform: 'translate3d(-130px, -15px, 140px) scale(1.4)'
+    pos: { x: 125, y: 20, z: 15 },
+    focusTransform: 'translate3d(-130px, -20px, 150px) scale(1.45)'
   },
   {
     id: 'failed',
     label: 'Failed Crate',
     placard: 'FAILED CRATE',
     accent: 'amber',
-    pos: { x: 45, y: 110, z: 0 },
-    focusTransform: 'translate3d(-45px, -110px, 140px) scale(1.4)'
+    pos: { x: 45, y: 105, z: 0 },
+    focusTransform: 'translate3d(-45px, -110px, 150px) scale(1.45)'
   }
 ];
 
@@ -121,7 +121,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
       window.history.pushState({ mobileFocus: focusedObjectId }, '');
     }
 
-    const handlePopState = (e: PopStateEvent) => {
+    const handlePopState = () => {
       if (focusedObjectId) {
         setFocusedObjectId(null);
       }
@@ -141,7 +141,6 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
   const handleTouchMove = (e: React.TouchEvent) => {
     if (touchStartX.current !== null && e.touches.length === 1) {
       const deltaX = e.touches[0].clientX - touchStartX.current;
-      // Clamp rotation within +/- 15 degrees
       const clamped = Math.max(-15, Math.min(15, deltaX * 0.15));
       setDragRotY(clamped);
     }
@@ -149,7 +148,6 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
 
   const handleTouchEnd = () => {
     touchStartX.current = null;
-    // Spring back to center
     setDragRotY(0);
   };
 
@@ -295,7 +293,6 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
         };
 
       case 'roadmap':
-        const firstRm = WORKSHOP_DATA.roadmap[0];
         return {
           title: '2026 Engineering Roadmap',
           placard: 'ROADMAP & GOALS',
@@ -373,7 +370,6 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
     <div 
       className="fixed inset-0 overflow-hidden bg-[#050810] text-slate-100 select-none font-mono-tech flex flex-col justify-between"
       style={{
-        // Viewport reference unit: --u = min(100vw / 390, 100dvh / 720)
         paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
@@ -384,33 +380,149 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
       {/* Background blueprint grid */}
       <div className="absolute inset-0 bg-blueprint-grid opacity-20 pointer-events-none" />
       
-      {/* Room Stage (Occupies upper 60% of viewport) */}
+      {/* Upper Section: Full Responsive 3D Isometric Workshop Room */}
       <div className="relative w-full h-[62dvh] flex items-center justify-center overflow-hidden">
         
-        {/* Room 3D World Stage with Dolly Camera Focus Transform */}
+        {/* 3D Isometric Perspective Viewport */}
         <div 
-          className="relative transition-all duration-700 ease-out"
+          className="relative transition-all duration-700 ease-out flex items-center justify-center"
           style={{
+            perspective: '900px',
             transformStyle: 'preserve-3d',
-            perspective: '1000px',
             transform: focusedConfig 
               ? `${focusedConfig.focusTransform} rotateY(${dragRotY}deg)`
-              : `rotateX(42deg) rotateZ(-45deg) rotateY(${dragRotY}deg) scale(0.92)`,
+              : `rotateX(28deg) rotateY(-22deg) rotateZ(0deg) rotateY(${dragRotY}deg)`,
           }}
         >
 
-          {/* ISOMETRIC ROOM CONTAINER (320px x 320px isometric base) */}
-          <div className="relative w-[320px] h-[320px] rounded-xl bg-slate-950/90 border-2 border-sky-500/30 shadow-[0_0_50px_rgba(0,0,0,0.9)]">
+          {/* REAL 3D ISOMETRIC WORKSHOP ROOM CONTAINER (Scales to phone width: 94vw max 360px) */}
+          <div className="relative w-[94vw] max-w-[360px] aspect-square rounded-2xl bg-[#0d1527] border-2 border-sky-500/40 shadow-[0_0_60px_rgba(0,0,0,0.95)] overflow-visible">
             
-            {/* Back Wall Hazard Stripe Border */}
-            <div className="absolute top-0 inset-x-0 h-4 bg-[repeating-linear-gradient(45deg,#000,#000_10px,#eab308_10px,#eab308_20px)] opacity-70" />
-            
-            {/* Wall Text Signage */}
-            <div className="absolute top-6 left-6 text-[9px] font-mono-tech font-bold text-amber-400 tracking-widest uppercase">
-              BUILD · BREAK · LEARN · REPEAT
+            {/* 3D FLOOR GRID WITH HAZARD BORDER */}
+            <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-70" />
+            <div className="absolute bottom-0 inset-x-0 h-3 bg-[repeating-linear-gradient(45deg,#000,#000_10px,#eab308_10px,#eab308_20px)] opacity-90 rounded-b-xl" />
+
+            {/* 3D BACK WALL: HEADER SIGNAGE & CLOCK */}
+            <div className="absolute top-0 inset-x-0 h-10 border-b border-sky-950 bg-slate-950/80 flex items-center justify-between px-3">
+              <span className="text-[8px] font-bold text-amber-400 tracking-widest uppercase">
+                BUILD · BREAK · LEARN · REPEAT
+              </span>
+              {/* Round Wall Clock */}
+              <div className="w-5 h-5 rounded-full border border-sky-400/60 bg-slate-900 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping" />
+              </div>
             </div>
 
-            {/* 1. OBJECT: FIGURE AT DESK (About) */}
+            {/* 3D LEFT WALL: WHITEBOARD WITH STICKY NOTES (Roadmap) */}
+            {(() => {
+              const id = 'roadmap';
+              const isFocused = focusedObjectId === id;
+              const isOtherFocused = focusedObjectId !== null && !isFocused;
+              const hasBeenTapped = tappedObjects.has(id);
+
+              return (
+                <button
+                  type="button"
+                  aria-label="Engineering Roadmap Whiteboard"
+                  onClick={() => handleObjectTap(id)}
+                  className={`absolute left-3 top-14 w-28 h-18 bg-slate-100 border-2 border-slate-400 rounded-lg p-1.5 shadow-[0_0_15px_rgba(255,255,255,0.25)] text-slate-950 transition-all duration-500 cursor-pointer ${
+                    isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
+                  }`}
+                >
+                  <div className="relative w-full h-full flex flex-col justify-between">
+                    <div className="text-[7px] font-mono-tech font-bold uppercase tracking-wider text-slate-800 flex justify-between">
+                      <span>ROADMAP</span>
+                      <span className="text-sky-600 font-bold">2026</span>
+                    </div>
+                    {/* 4 Colored Sticky Note Cards */}
+                    <div className="grid grid-cols-2 gap-1 my-0.5">
+                      <div className="h-3.5 bg-amber-300 rounded border border-amber-400 shadow-sm" />
+                      <div className="h-3.5 bg-cyan-300 rounded border border-cyan-400 shadow-sm" />
+                      <div className="h-3.5 bg-rose-300 rounded border border-rose-400 shadow-sm" />
+                      <div className="h-3.5 bg-emerald-300 rounded border border-emerald-400 shadow-sm" />
+                    </div>
+                    {!hasBeenTapped && !focusedObjectId && (
+                      <span className="absolute -top-2 -right-2 w-3.5 h-3.5 rounded-full bg-white animate-ping" />
+                    )}
+                  </div>
+                </button>
+              );
+            })()}
+
+            {/* GLASS DISPLAY TOWER SHELVES (Projects) */}
+            {(() => {
+              const id = 'projects';
+              const isFocused = focusedObjectId === id;
+              const isOtherFocused = focusedObjectId !== null && !isFocused;
+              const hasBeenTapped = tappedObjects.has(id);
+
+              return (
+                <button
+                  type="button"
+                  aria-label="Finished Projects Glass Tower"
+                  onClick={() => handleObjectTap(id)}
+                  className={`absolute left-4 top-36 w-14 h-32 bg-sky-950/40 border-2 border-sky-400/80 rounded-xl p-1.5 flex flex-col justify-between shadow-[0_0_25px_rgba(56,189,248,0.3)] transition-all duration-500 cursor-pointer ${
+                    isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
+                  }`}
+                >
+                  <div className="relative w-full h-full flex flex-col justify-between items-center">
+                    {!hasBeenTapped && !focusedObjectId && (
+                      <span className="absolute -top-2 -right-2 w-3.5 h-3.5 rounded-full bg-sky-400 animate-ping" />
+                    )}
+                    {/* 3D Floating Artifact Cubes Inside Glass Tower */}
+                    <div className="w-8 h-8 rounded bg-sky-500/30 border border-sky-300 flex items-center justify-center shadow-md">
+                      <Layers size={14} className="text-sky-300 animate-pulse" />
+                    </div>
+                    <div className="w-8 h-8 rounded bg-indigo-500/30 border border-indigo-300 flex items-center justify-center shadow-md">
+                      <Cpu size={14} className="text-indigo-300" />
+                    </div>
+                    <div className="w-8 h-8 rounded bg-emerald-500/30 border border-emerald-300 flex items-center justify-center shadow-md">
+                      <Zap size={14} className="text-emerald-300" />
+                    </div>
+                    <span className="text-[7px] font-bold bg-slate-950 text-sky-400 border border-sky-500/40 px-1 py-0.5 rounded">
+                      PROJECTS
+                    </span>
+                  </div>
+                </button>
+              );
+            })()}
+
+            {/* MASCOT OK-02 SHOWCASE PEDESTAL (Mascot) */}
+            {(() => {
+              const id = 'mascot';
+              const isFocused = focusedObjectId === id;
+              const isOtherFocused = focusedObjectId !== null && !isFocused;
+              const hasBeenTapped = tappedObjects.has(id);
+
+              return (
+                <button
+                  type="button"
+                  aria-label="Mascot OK-02 Pedestal"
+                  onClick={() => handleObjectTap(id)}
+                  className={`absolute left-4 bottom-5 w-14 h-20 bg-slate-950 border-2 border-sky-400/90 rounded-xl p-1.5 flex flex-col items-center justify-between shadow-[0_0_25px_rgba(56,189,248,0.4)] transition-all duration-500 cursor-pointer ${
+                    isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
+                  }`}
+                >
+                  <div className="relative w-full h-full flex flex-col items-center justify-between">
+                    {!hasBeenTapped && !focusedObjectId && (
+                      <span className="absolute -top-2 -right-2 w-3.5 h-3.5 rounded-full bg-sky-400 animate-ping" />
+                    )}
+                    {/* Robot Mascot Unit */}
+                    <div className="w-9 h-11 rounded-lg bg-sky-950/80 border border-sky-400 flex flex-col items-center justify-center p-1">
+                      <div className="w-2 h-1 bg-amber-400 rounded-full mb-0.5" />
+                      <div className={`w-6 h-5 rounded-md bg-slate-950 border border-sky-300 flex items-center justify-center transition-transform ${isBlinking ? 'scale-y-[0.1]' : 'scale-y-100'}`}>
+                        <div className="w-2 h-2 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]" />
+                      </div>
+                    </div>
+                    <span className="text-[7px] font-bold bg-slate-950 text-sky-300 border border-sky-500/40 px-1 py-0.5 rounded">
+                      MASCOT
+                    </span>
+                  </div>
+                </button>
+              );
+            })()}
+
+            {/* CENTER DESK & SEATED CHARACTER FIGURE (About) */}
             {(() => {
               const id = 'about';
               const isFocused = focusedObjectId === id;
@@ -420,28 +532,39 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
               return (
                 <button
                   type="button"
-                  aria-label="About Dossier (Figure at Desk)"
+                  aria-label="About Dossier (Figure Seated at Desk)"
                   onClick={() => handleObjectTap(id)}
-                  className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full transition-all duration-500 cursor-pointer ${
+                  className={`absolute left-[125px] top-[110px] w-24 h-24 flex flex-col items-center justify-center transition-all duration-500 cursor-pointer ${
                     isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
                   }`}
                 >
                   <div className="relative flex flex-col items-center">
                     {!hasBeenTapped && !focusedObjectId && (
-                      <span className="absolute -top-3 w-3 h-3 rounded-full bg-sky-400 animate-ping" />
+                      <span className="absolute -top-3 w-4 h-4 rounded-full bg-sky-400 animate-ping" />
                     )}
-                    <div className="w-12 h-12 rounded-full bg-slate-900 border-2 border-sky-400/80 flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.4)]">
-                      <User size={22} className="text-sky-300" />
+                    {/* 3D Seated Character Figure + Computer Desk */}
+                    <div className="relative w-20 h-16 bg-[#634125] border-2 border-[#8b5a2b] rounded-lg p-1.5 flex justify-between items-center shadow-[0_5px_15px_rgba(0,0,0,0.6)]">
+                      {/* Laptop with cyan glowing screen */}
+                      <div className="w-7 h-6 rounded bg-slate-950 border border-sky-400 flex items-center justify-center shadow-md">
+                        <div className="w-4 h-3 bg-sky-400/90 rounded-sm animate-pulse" />
+                      </div>
+                      {/* Character Head & Shoulders (Albert) */}
+                      <div className="relative flex flex-col items-center">
+                        <div className="w-6 h-6 rounded-full bg-[#5c3a21] border-2 border-[#8b5a2b] shadow-md flex items-center justify-center">
+                          <User size={12} className="text-slate-100" />
+                        </div>
+                        <div className="w-8 h-4 rounded-t-md bg-slate-900 border border-sky-500/60 mt-0.5" />
+                      </div>
                     </div>
-                    <span className="text-[8px] bg-slate-950/90 text-sky-400 border border-sky-500/40 px-1.5 py-0.5 rounded mt-1 font-bold">
-                      ABOUT
+                    <span className="text-[8px] font-bold bg-slate-950 text-sky-400 border border-sky-500/40 px-2 py-0.5 rounded mt-1.5 shadow-md">
+                      ABOUT ALBERT
                     </span>
                   </div>
                 </button>
               );
             })()}
 
-            {/* 2. OBJECT: NOTEBOOKS (Journal) */}
+            {/* COFFEE TABLE & NOTEBOOKS (Journal) */}
             {(() => {
               const id = 'journal';
               const isFocused = focusedObjectId === id;
@@ -453,18 +576,21 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                   type="button"
                   aria-label="Research Journal (Notebooks)"
                   onClick={() => handleObjectTap(id)}
-                  className={`absolute left-[70px] bottom-[60px] min-w-[48px] min-h-[48px] flex items-center justify-center transition-all duration-500 cursor-pointer ${
+                  className={`absolute left-[135px] bottom-5 w-20 h-14 flex flex-col items-center justify-center transition-all duration-500 cursor-pointer ${
                     isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
                   }`}
                 >
                   <div className="relative flex flex-col items-center">
                     {!hasBeenTapped && !focusedObjectId && (
-                      <span className="absolute -top-3 w-3 h-3 rounded-full bg-white animate-ping" />
+                      <span className="absolute -top-3 w-3.5 h-3.5 rounded-full bg-white animate-ping" />
                     )}
-                    <div className="w-10 h-10 rounded-lg bg-slate-900 border-2 border-slate-300/80 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                      <BookOpen size={18} className="text-amber-400" />
+                    {/* Low Coffee Table + Stacked Colorful 3D Books */}
+                    <div className="w-16 h-9 rounded-lg bg-[#59391e] border border-[#7a4f2b] p-1 flex items-center justify-center shadow-md">
+                      <div className="w-12 h-6 bg-amber-500 rounded border border-amber-300 flex items-center justify-center shadow-inner">
+                        <BookOpen size={13} className="text-slate-950" />
+                      </div>
                     </div>
-                    <span className="text-[8px] bg-slate-950/90 text-slate-200 border border-slate-600 px-1.5 py-0.5 rounded mt-1 font-bold">
+                    <span className="text-[7.5px] font-bold bg-slate-950 text-slate-100 border border-slate-600 px-1.5 py-0.5 rounded mt-1 shadow-md">
                       JOURNAL
                     </span>
                   </div>
@@ -472,69 +598,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
               );
             })()}
 
-            {/* 3. OBJECT: GLASS SHELVES (Projects) */}
-            {(() => {
-              const id = 'projects';
-              const isFocused = focusedObjectId === id;
-              const isOtherFocused = focusedObjectId !== null && !isFocused;
-              const hasBeenTapped = tappedObjects.has(id);
-
-              return (
-                <button
-                  type="button"
-                  aria-label="Finished Projects (Glass Shelves)"
-                  onClick={() => handleObjectTap(id)}
-                  className={`absolute left-[30px] top-[70px] min-w-[48px] min-h-[48px] flex items-center justify-center transition-all duration-500 cursor-pointer ${
-                    isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
-                  }`}
-                >
-                  <div className="relative flex flex-col items-center">
-                    {!hasBeenTapped && !focusedObjectId && (
-                      <span className="absolute -top-3 w-3 h-3 rounded-full bg-sky-400 animate-ping" />
-                    )}
-                    <div className="w-10 h-12 rounded-lg bg-sky-950/60 border-2 border-sky-400/80 flex flex-col items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.3)]">
-                      <Layers size={18} className="text-sky-300" />
-                    </div>
-                    <span className="text-[8px] bg-slate-950/90 text-sky-400 border border-sky-500/40 px-1.5 py-0.5 rounded mt-1 font-bold">
-                      PROJECTS
-                    </span>
-                  </div>
-                </button>
-              );
-            })()}
-
-            {/* 4. OBJECT: MASCOT OK-02 (Pedestal) */}
-            {(() => {
-              const id = 'mascot';
-              const isFocused = focusedObjectId === id;
-              const isOtherFocused = focusedObjectId !== null && !isFocused;
-              const hasBeenTapped = tappedObjects.has(id);
-
-              return (
-                <button
-                  type="button"
-                  aria-label="Mascot OK-02 Showcase"
-                  onClick={() => handleObjectTap(id)}
-                  className={`absolute left-[25px] top-[160px] min-w-[48px] min-h-[48px] flex items-center justify-center transition-all duration-500 cursor-pointer ${
-                    isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
-                  }`}
-                >
-                  <div className="relative flex flex-col items-center">
-                    {!hasBeenTapped && !focusedObjectId && (
-                      <span className="absolute -top-3 w-3 h-3 rounded-full bg-sky-400 animate-ping" />
-                    )}
-                    <div className="w-11 h-11 rounded-full bg-slate-950 border-2 border-sky-400/80 flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.5)]">
-                      <div className={`w-4 h-4 rounded-full bg-sky-400 transition-transform ${isBlinking ? 'scale-y-[0.1]' : 'scale-y-100'}`} />
-                    </div>
-                    <span className="text-[8px] bg-slate-950/90 text-sky-300 border border-sky-500/40 px-1.5 py-0.5 rounded mt-1 font-bold">
-                      MASCOT
-                    </span>
-                  </div>
-                </button>
-              );
-            })()}
-
-            {/* 5. OBJECT: WORKBENCH (Workstation / In-Progress) */}
+            {/* MAIN WORKBENCH & OVERHEAD LAMP (Workstation) */}
             {(() => {
               const id = 'workstation';
               const isFocused = focusedObjectId === id;
@@ -544,20 +608,26 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
               return (
                 <button
                   type="button"
-                  aria-label="In-Progress Workstation Bench"
+                  aria-label="In-Progress Workbench"
                   onClick={() => handleObjectTap(id)}
-                  className={`absolute right-[30px] top-[80px] min-w-[48px] min-h-[48px] flex items-center justify-center transition-all duration-500 cursor-pointer ${
+                  className={`absolute right-3 top-16 w-28 h-28 flex flex-col items-center justify-center transition-all duration-500 cursor-pointer ${
                     isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
                   }`}
                 >
                   <div className="relative flex flex-col items-center">
                     {!hasBeenTapped && !focusedObjectId && (
-                      <span className="absolute -top-3 w-3 h-3 rounded-full bg-amber-400 animate-ping" />
+                      <span className="absolute -top-3 w-4 h-4 rounded-full bg-amber-400 animate-ping" />
                     )}
-                    <div className="w-12 h-10 rounded-lg bg-amber-950/70 border-2 border-amber-500/80 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.4)]">
-                      <Zap size={18} className="text-amber-400 animate-pulse" />
+                    {/* Slate Gray Workbench + Green Mat + Glowing Amber Lamp */}
+                    <div className="relative w-24 h-16 rounded-xl bg-slate-800 border-2 border-slate-600 p-1.5 flex flex-col justify-between shadow-[0_0_25px_rgba(245,158,11,0.3)]">
+                      {/* Overhead Lamp Cone Glow */}
+                      <div className="absolute -top-4 right-2 w-5 h-5 rounded-full bg-amber-400/90 border border-amber-300 shadow-[0_0_15px_#f59e0b] animate-pulse" />
+                      <div className="w-full h-8 bg-emerald-950/80 rounded border border-emerald-500/60 p-1 flex justify-between items-center">
+                        <div className="w-5 h-4 bg-slate-900 rounded border border-slate-600" />
+                        <Zap size={14} className="text-amber-400 animate-pulse" />
+                      </div>
                     </div>
-                    <span className="text-[8px] bg-slate-950/90 text-amber-400 border border-amber-500/40 px-1.5 py-0.5 rounded mt-1 font-bold">
+                    <span className="text-[7.5px] font-bold bg-slate-950 text-amber-400 border border-amber-500/40 px-1.5 py-0.5 rounded mt-1.5 shadow-md">
                       WORKBENCH
                     </span>
                   </div>
@@ -565,38 +635,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
               );
             })()}
 
-            {/* 6. OBJECT: WHITEBOARD (Roadmap) */}
-            {(() => {
-              const id = 'roadmap';
-              const isFocused = focusedObjectId === id;
-              const isOtherFocused = focusedObjectId !== null && !isFocused;
-              const hasBeenTapped = tappedObjects.has(id);
-
-              return (
-                <button
-                  type="button"
-                  aria-label="Engineering Roadmap (Whiteboard)"
-                  onClick={() => handleObjectTap(id)}
-                  className={`absolute left-[90px] top-[25px] min-w-[48px] min-h-[48px] flex items-center justify-center transition-all duration-500 cursor-pointer ${
-                    isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
-                  }`}
-                >
-                  <div className="relative flex flex-col items-center">
-                    {!hasBeenTapped && !focusedObjectId && (
-                      <span className="absolute -top-3 w-3 h-3 rounded-full bg-white animate-ping" />
-                    )}
-                    <div className="w-12 h-8 rounded bg-slate-100 border-2 border-slate-400 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.4)]">
-                      <span className="text-[7px] font-bold text-slate-950">ROADMAP</span>
-                    </div>
-                    <span className="text-[8px] bg-slate-950/90 text-slate-300 border border-slate-600 px-1.5 py-0.5 rounded mt-1 font-bold">
-                      WHITEBOARD
-                    </span>
-                  </div>
-                </button>
-              );
-            })()}
-
-            {/* 7. OBJECT: CRT TERMINAL (Terminal & Contact) */}
+            {/* CRT TERMINAL CONTROL DESK (Terminal & Contact) */}
             {(() => {
               const id = 'terminal';
               const isFocused = focusedObjectId === id;
@@ -608,18 +647,19 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                   type="button"
                   aria-label="CRT Terminal Desk"
                   onClick={() => handleObjectTap(id)}
-                  className={`absolute right-[25px] bottom-[70px] min-w-[48px] min-h-[48px] flex items-center justify-center transition-all duration-500 cursor-pointer ${
+                  className={`absolute right-3 bottom-16 w-20 h-16 flex flex-col items-center justify-center transition-all duration-500 cursor-pointer ${
                     isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
                   }`}
                 >
                   <div className="relative flex flex-col items-center">
                     {!hasBeenTapped && !focusedObjectId && (
-                      <span className="absolute -top-3 w-3 h-3 rounded-full bg-white animate-ping" />
+                      <span className="absolute -top-3 w-3.5 h-3.5 rounded-full bg-white animate-ping" />
                     )}
-                    <div className="w-11 h-11 rounded-lg bg-slate-950 border-2 border-sky-400/90 flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.5)]">
+                    {/* Dark Side Table + CRT Monitor */}
+                    <div className="w-16 h-11 rounded-lg bg-slate-900 border-2 border-sky-400/80 p-1 flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.4)]">
                       <Terminal size={18} className="text-emerald-400 animate-pulse" />
                     </div>
-                    <span className="text-[8px] bg-slate-950/90 text-emerald-400 border border-emerald-500/40 px-1.5 py-0.5 rounded mt-1 font-bold">
+                    <span className="text-[7.5px] font-bold bg-slate-950 text-emerald-400 border border-emerald-500/40 px-1.5 py-0.5 rounded mt-1 shadow-md">
                       TERMINAL
                     </span>
                   </div>
@@ -627,7 +667,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
               );
             })()}
 
-            {/* 8. OBJECT: FAILED CRATE (Failed Prototypes) */}
+            {/* FAILED PROTOTYPES CRATE (Failed) */}
             {(() => {
               const id = 'failed';
               const isFocused = focusedObjectId === id;
@@ -639,18 +679,19 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                   type="button"
                   aria-label="Failed Prototypes Crate"
                   onClick={() => handleObjectTap(id)}
-                  className={`absolute right-[110px] bottom-[30px] min-w-[48px] min-h-[48px] flex items-center justify-center transition-all duration-500 cursor-pointer ${
+                  className={`absolute right-6 bottom-3 w-16 h-12 flex flex-col items-center justify-center transition-all duration-500 cursor-pointer ${
                     isOtherFocused ? 'opacity-35 scale-90' : 'opacity-100 scale-100'
                   }`}
                 >
                   <div className="relative flex flex-col items-center">
                     {!hasBeenTapped && !focusedObjectId && (
-                      <span className="absolute -top-3 w-3 h-3 rounded-full bg-amber-500 animate-ping" />
+                      <span className="absolute -top-3 w-3.5 h-3.5 rounded-full bg-amber-500 animate-ping" />
                     )}
-                    <div className="w-10 h-10 rounded-lg bg-amber-950/80 border-2 border-amber-600/80 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                      <Flame size={18} className="text-amber-500" />
+                    {/* Wooden Crate with Hazard Stripe Label */}
+                    <div className="w-13 h-8 rounded bg-amber-950/90 border-2 border-amber-600 p-0.5 flex items-center justify-center shadow-md">
+                      <Flame size={14} className="text-amber-500" />
                     </div>
-                    <span className="text-[8px] bg-slate-950/90 text-amber-500 border border-amber-600/40 px-1.5 py-0.5 rounded mt-1 font-bold">
+                    <span className="text-[7px] font-bold bg-slate-950 text-amber-500 border border-amber-600/40 px-1 py-0.5 rounded mt-0.5">
                       FAILED CRATE
                     </span>
                   </div>
@@ -672,13 +713,13 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
         </div>
       )}
 
-      {/* MOBILE BOTTOM SHEET (Slides up in lower ~40% of viewport when an object is tapped) */}
+      {/* MOBILE BOTTOM SHEET (Slides up in lower ~38% of viewport when an object is tapped) */}
       {focusedObjectId && sheetData && (
         <div 
           role="dialog"
           aria-modal="true"
           aria-labelledby="mobile-sheet-title"
-          className="relative w-full bg-[#0b1220] border-t-2 border-sky-500/50 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.9)] p-5 z-40 animate-slide-up flex flex-col justify-between max-h-[44dvh]"
+          className="relative w-full bg-[#0b1220] border-t-2 border-sky-500/50 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.9)] p-5 z-40 animate-slide-up flex flex-col justify-between max-h-[42dvh]"
         >
           {/* Sheet Top Drag Handle Bar */}
           <div 
