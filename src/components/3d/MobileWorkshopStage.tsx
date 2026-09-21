@@ -16,7 +16,7 @@ export interface MobileObjectConfig {
   shortLabel: string;
   placard: string;
   accent: 'cyan' | 'amber' | 'white';
-  pos: { x: number; y: number; z: number }; // Ground point + box height
+  pos: { x: number; y: number; z: number };
   boxSize: { w: number; d: number; h: number };
   focusTransform: string;
   defaultSide: 'below' | 'left' | 'right' | 'above';
@@ -29,8 +29,8 @@ export const MOBILE_OBJECTS: MobileObjectConfig[] = [
     shortLabel: 'About',
     placard: 'ABOUT DOSSIER',
     accent: 'cyan',
-    pos: { x: 84, y: 62, z: 28 },
-    boxSize: { w: 66, d: 34, h: 28 },
+    pos: { x: 84, y: 62, z: 30 },
+    boxSize: { w: 70, d: 36, h: 30 },
     focusTransform: 'translate3d(0px, 25px, 120px) scale(1.45)',
     defaultSide: 'below'
   },
@@ -40,8 +40,8 @@ export const MOBILE_OBJECTS: MobileObjectConfig[] = [
     shortLabel: 'Journal',
     placard: 'RESEARCH JOURNAL',
     accent: 'white',
-    pos: { x: 40, y: 142, z: 18 },
-    boxSize: { w: 46, d: 30, h: 18 },
+    pos: { x: 40, y: 142, z: 20 },
+    boxSize: { w: 48, d: 32, h: 20 },
     focusTransform: 'translate3d(70px, -65px, 130px) scale(1.5)',
     defaultSide: 'right'
   },
@@ -51,8 +51,8 @@ export const MOBILE_OBJECTS: MobileObjectConfig[] = [
     shortLabel: 'Finished',
     placard: 'FINISHED PROJECTS',
     accent: 'cyan',
-    pos: { x: 190, y: 8, z: 94 },
-    boxSize: { w: 54, d: 40, h: 94 },
+    pos: { x: 190, y: 8, z: 102 },
+    boxSize: { w: 56, d: 42, h: 102 },
     focusTransform: 'translate3d(-90px, 90px, 130px) scale(1.5)',
     defaultSide: 'left'
   },
@@ -62,8 +62,8 @@ export const MOBILE_OBJECTS: MobileObjectConfig[] = [
     shortLabel: 'OK-02',
     placard: 'MASCOT OK-02',
     accent: 'cyan',
-    pos: { x: 16, y: 8, z: 66 },
-    boxSize: { w: 36, d: 36, h: 66 },
+    pos: { x: 16, y: 8, z: 72 },
+    boxSize: { w: 38, d: 38, h: 72 },
     focusTransform: 'translate3d(120px, 80px, 130px) scale(1.5)',
     defaultSide: 'right'
   },
@@ -74,7 +74,7 @@ export const MOBILE_OBJECTS: MobileObjectConfig[] = [
     placard: 'IN-PROGRESS BENCH',
     accent: 'amber',
     pos: { x: 184, y: 78, z: 34 },
-    boxSize: { w: 62, d: 112, h: 34 },
+    boxSize: { w: 66, d: 116, h: 34 },
     focusTransform: 'translate3d(-85px, -20px, 130px) scale(1.5)',
     defaultSide: 'left'
   },
@@ -85,7 +85,7 @@ export const MOBILE_OBJECTS: MobileObjectConfig[] = [
     placard: 'ROADMAP & GOALS',
     accent: 'white',
     pos: { x: 74, y: 0, z: 70 },
-    boxSize: { w: 84, d: 4, h: 50 },
+    boxSize: { w: 86, d: 4, h: 52 },
     focusTransform: 'translate3d(10px, 110px, 110px) scale(1.5)',
     defaultSide: 'below'
   },
@@ -95,8 +95,8 @@ export const MOBILE_OBJECTS: MobileObjectConfig[] = [
     shortLabel: 'Contact',
     placard: 'TERMINAL & CONTACT',
     accent: 'white',
-    pos: { x: 192, y: 204, z: 56 },
-    boxSize: { w: 44, d: 32, h: 56 },
+    pos: { x: 192, y: 204, z: 60 },
+    boxSize: { w: 46, d: 34, h: 60 },
     focusTransform: 'translate3d(-80px, -90px, 130px) scale(1.5)',
     defaultSide: 'left'
   },
@@ -106,48 +106,95 @@ export const MOBILE_OBJECTS: MobileObjectConfig[] = [
     shortLabel: 'Failed',
     placard: 'FAILED CRATE',
     accent: 'amber',
-    pos: { x: 18, y: 196, z: 18 },
-    boxSize: { w: 36, d: 28, h: 18 },
+    pos: { x: 18, y: 196, z: 20 },
+    boxSize: { w: 38, d: 30, h: 20 },
     focusTransform: 'translate3d(100px, -100px, 130px) scale(1.5)',
     defaultSide: 'right'
   }
 ];
 
-// PROBLEM 1: EXACT 3D Box Helper Component Bx
-interface BxProps {
+// Robust 3D Box Face Components with Crisp Inset Borders & Shading
+interface Box3DProps {
   x: number;
   y: number;
   w: number;
   d: number;
   h: number;
-  color: string;
+  topColor: string;
+  frontColor: string;
+  leftColor: string;
   z?: number;
-  frontColor?: string;
+  opacity?: number;
   children?: React.ReactNode;
 }
 
-const Bx: React.FC<BxProps> = ({
-  x, y, w, d, h, color, z = 0, frontColor, children
+const Box3D: React.FC<Box3DProps> = ({
+  x, y, w, d, h, topColor, frontColor, leftColor, z = 0, opacity = 1, children
 }) => {
   return (
     <div
       className="bx"
       style={{
+        position: 'absolute',
         left: `${x}px`,
         top: `${y}px`,
         width: `${w}px`,
         height: `${d}px`,
         transform: `translateZ(${z}px)`,
-        '--c': color,
-        '--fc': frontColor || color,
-      } as React.CSSProperties}
+        transformStyle: 'preserve-3d',
+        opacity: opacity,
+      }}
     >
-      {/* Top face (lighter) */}
-      <div className="p t" style={{ width: `${w}px`, height: `${d}px`, transform: `translateZ(${h}px)` }} />
-      {/* Front face (mid) */}
-      <div className="p f" style={{ top: `${d - h}px`, width: `${w}px`, height: `${h}px`, transformOrigin: '0 100%', transform: 'rotateX(-90deg)' }} />
-      {/* Left face (darker) */}
-      <div className="p l" style={{ width: `${h}px`, height: `${d}px`, transformOrigin: '0 0', transform: 'rotateY(-90deg)' }} />
+      {/* Top Face (Lighter) */}
+      <div
+        style={{
+          position: 'absolute',
+          width: `${w}px`,
+          height: `${d}px`,
+          left: 0,
+          top: 0,
+          transform: `translateZ(${h}px)`,
+          backgroundColor: topColor,
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.22), rgba(255,255,255,0.06))',
+          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.3)',
+          transformStyle: 'preserve-3d',
+          backfaceVisibility: 'visible',
+        }}
+      />
+      {/* Front Face (+y) (Mid Tone) */}
+      <div
+        style={{
+          position: 'absolute',
+          width: `${w}px`,
+          height: `${h}px`,
+          left: 0,
+          top: `${d - h}px`,
+          transformOrigin: '0 100%',
+          transform: 'rotateX(-90deg)',
+          backgroundColor: frontColor,
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.3))',
+          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.2)',
+          transformStyle: 'preserve-3d',
+          backfaceVisibility: 'visible',
+        }}
+      />
+      {/* Left Face (-x) (Darker Tone) */}
+      <div
+        style={{
+          position: 'absolute',
+          width: `${h}px`,
+          height: `${d}px`,
+          left: 0,
+          top: 0,
+          transformOrigin: '0 0',
+          transform: 'rotateY(-90deg)',
+          backgroundColor: leftColor,
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.55))',
+          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.15)',
+          transformStyle: 'preserve-3d',
+          backfaceVisibility: 'visible',
+        }}
+      />
       {children}
     </div>
   );
@@ -182,7 +229,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
 
   const closeModal = useCallback(() => setModalState((prev) => ({ ...prev, isOpen: false })), []);
 
-  // PROBLEM 4: Measure, don't guess! Dynamic viewport bounding box calculation
+  // Measure, don't guess! Dynamic viewport bounding box calculation
   const updateScaleAndBounds = useCallback(() => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -216,7 +263,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
     };
   }, [updateScaleAndBounds]);
 
-  // PROBLEM 3: Collision Pass for Labels
+  // Label Collision Detection Pass
   useLayoutEffect(() => {
     const checkLabelCollisions = () => {
       const nodes = Object.entries(labelRefs.current);
@@ -542,14 +589,11 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Dynamic Keyframes and Mandatory CSS Rule from Prompt */}
+      {/* 3D Context Preservation CSS Rules */}
       <style>{`
-        .bx, .g, #room { transform-style: preserve-3d; }
-        .p, .bx { position: absolute; }
-        .t { background: linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15)), var(--c); }
-        .f { background: linear-gradient(rgba(0,0,0,0.12), rgba(0,0,0,0.12)), var(--fc, var(--c)); }
-        .l { background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), var(--c); }
-
+        .bx, .g, #room, #world, #stage { transform-style: preserve-3d; }
+        .bx { position: absolute; }
+        
         @keyframes mascotHeadTurn {
           0%, 100% { transform: rotate(0deg); }
           40%, 60% { transform: rotate(-10deg); }
@@ -587,7 +631,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
           style={{
             position: 'absolute',
             left: '50%',
-            top: '38%', // Upper 60% of viewport
+            top: '38%',
             width: 0,
             height: 0,
             transformStyle: 'preserve-3d',
@@ -692,7 +736,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
               />
             </div>
 
-            {/* PROBLEM 4 FIX: WALL A LOWERED TO 90px HEIGHT (Back Left, y=0) */}
+            {/* WALL A (Back Left, y=0, height 90px) */}
             <div
               style={{
                 position: 'absolute',
@@ -757,35 +801,27 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                 </svg>
               </div>
 
-              {/* Whiteboard on Wall A (Roadmap) */}
-              <div
-                style={{
-                  position: 'absolute',
-                  left: '74px',
-                  top: '16px',
-                  width: '84px',
-                  height: '50px',
-                  background: '#f8fafc',
-                  border: '2px solid #94a3b8',
-                  borderRadius: '4px',
-                  padding: '4px',
-                  boxShadow: '0 0 10px rgba(255,255,255,0.2)',
-                  '--o': focusedObjectId === 'roadmap' || !focusedObjectId ? 1 : 0.28,
-                } as React.CSSProperties}
+              {/* 3D Box Whiteboard on Wall A (Roadmap) */}
+              <Box3D 
+                x={74} y={0} w={86} d={4} h={52} z={18}
+                topColor="#cbd5e1" frontColor="#ffffff" leftColor="#94a3b8"
+                opacity={focusedObjectId === 'roadmap' || !focusedObjectId ? 1 : 0.28}
               >
-                <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#0f172a', marginBottom: '2px' }}>
-                  2026 ROADMAP
+                <div style={{ position: 'absolute', inset: 0, padding: '4px', transform: 'translateZ(53px)', pointerEvents: 'none' }}>
+                  <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#0f172a', marginBottom: '2px' }}>
+                    2026 ROADMAP
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
+                    <div style={{ background: '#fef08a', height: '14px', borderRadius: '2px', padding: '1px', fontSize: '5px', color: '#854d0e', fontWeight: 'bold' }}>Q1: IoT</div>
+                    <div style={{ background: '#bae6fd', height: '14px', borderRadius: '2px', padding: '1px', fontSize: '5px', color: '#0369a1', fontWeight: 'bold' }}>Q2: Robot</div>
+                    <div style={{ background: '#fecdd3', height: '14px', borderRadius: '2px', padding: '1px', fontSize: '5px', color: '#be123c', fontWeight: 'bold' }}>Q3: ML</div>
+                    <div style={{ background: '#a7f3d0', height: '14px', borderRadius: '2px', padding: '1px', fontSize: '5px', color: '#047857', fontWeight: 'bold' }}>Q4: OSS</div>
+                  </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
-                  <div style={{ background: '#fef08a', height: '14px', borderRadius: '2px', padding: '1px', fontSize: '5px', color: '#854d0e', fontWeight: 'bold' }}>Q1: IoT</div>
-                  <div style={{ background: '#bae6fd', height: '14px', borderRadius: '2px', padding: '1px', fontSize: '5px', color: '#0369a1', fontWeight: 'bold' }}>Q2: Robot</div>
-                  <div style={{ background: '#fecdd3', height: '14px', borderRadius: '2px', padding: '1px', fontSize: '5px', color: '#be123c', fontWeight: 'bold' }}>Q3: ML</div>
-                  <div style={{ background: '#a7f3d0', height: '14px', borderRadius: '2px', padding: '1px', fontSize: '5px', color: '#047857', fontWeight: 'bold' }}>Q4: OSS</div>
-                </div>
-              </div>
+              </Box3D>
             </div>
 
-            {/* PROBLEM 4 FIX: WALL B LOWERED TO 90px HEIGHT (Back Right, x=250) */}
+            {/* WALL B (Back Right, x=250, height 90px) */}
             <div
               style={{
                 position: 'absolute',
@@ -814,76 +850,82 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
             </div>
 
 
-            {/* PROBLEM 1: OBJECTS BUILT ENTIRELY FROM Bx HELPER WITH 3 SHADED FACES */}
+            {/* 3D OBJECT ASSEMBLIES (REAL 3D BOXES WITH HEIGHT & CRSP 3-FACE SHADINGS) */}
 
             {/* OBJECT 1: MASCOT SHOWCASE (Plinth + Glass Box + Robot Billboard) */}
             <div style={{ '--o': focusedObjectId === 'mascot' || !focusedObjectId ? 1 : 0.28 } as React.CSSProperties}>
-              {/* Plinth Box (h=16) */}
-              <Bx x={16} y={8} w={36} d={36} h={16} color="#0f172a" frontColor="#020617" />
-              {/* Glass Case Box (h=50, z=16) */}
-              <Bx x={16} y={8} w={36} d={36} h={50} z={16} color="rgba(56,189,248,0.2)" frontColor="rgba(56,189,248,0.3)" />
+              {/* Plinth Base Box (h=18) */}
+              <Box3D x={16} y={8} w={38} d={38} h={18} topColor="#334155" frontColor="#1e293b" leftColor="#0f172a" />
+              {/* Translucent Glass Showcase Box (h=54, z=18) */}
+              <Box3D x={16} y={8} w={38} d={38} h={54} z={18} topColor="rgba(56,189,248,0.35)" frontColor="rgba(56,189,248,0.25)" leftColor="rgba(3,105,161,0.2)" />
               {/* Animated Robot Mascot Billboard */}
               <div
                 style={{
                   position: 'absolute',
-                  left: '34px',
-                  top: '26px',
-                  width: '26px',
-                  height: '36px',
+                  left: '35px',
+                  top: '27px',
+                  width: '32px',
+                  height: '44px',
                   transformOrigin: '50% 100%',
-                  transform: 'translateZ(16px) rotateZ(45deg) rotateX(-58deg)',
+                  transform: 'translateZ(18px) rotateZ(45deg) rotateX(-58deg)',
                   transformStyle: 'preserve-3d',
                   pointerEvents: 'none',
                 }}
               >
-                <svg width="26" height="36" viewBox="0 0 32 44" fill="none" className="drop-shadow-[0_0_6px_#38bdf8]">
+                <svg width="32" height="44" viewBox="0 0 32 44" fill="none" className="drop-shadow-[0_0_8px_#38bdf8]">
                   <g className="animate-mascot-head">
-                    <rect x="8" y="4" width="16" height="12" rx="3" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.5" />
-                    <circle cx="12" cy="10" r="2.5" fill="#38bdf8" />
-                    <circle cx="20" cy="10" r="2.5" fill="#38bdf8" />
-                    <rect x="14" y="0" width="4" height="4" fill="#fbbf24" />
+                    <rect x="6" y="2" width="20" height="14" rx="4" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.8" />
+                    <circle cx="11" cy="9" r="3" fill="#38bdf8" />
+                    <circle cx="21" cy="9" r="3" fill="#38bdf8" />
+                    <rect x="14" y="0" width="4" height="3" fill="#fbbf24" />
                   </g>
-                  <rect x="6" y="18" width="20" height="18" rx="4" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
-                  <circle cx="16" cy="27" r="2.5" fill="#4ade80" />
+                  <rect x="4" y="18" width="24" height="22" rx="5" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.8" />
+                  <rect x="8" y="22" width="16" height="10" rx="2" fill="#090d16" stroke="#38bdf8" strokeWidth="1" />
+                  <circle cx="16" cy="27" r="3" fill="#4ade80" />
                 </svg>
               </div>
             </div>
 
-            {/* OBJECT 2: FINISHED PROJECTS GLASS CABINET (Plinth + Translucent Cabinet + Cubes) */}
+            {/* OBJECT 2: FINISHED PROJECTS GLASS CABINET (Plinth + Glass Cabinet + Shelf Planes + Artifact Cubes) */}
             <div style={{ '--o': focusedObjectId === 'projects' || !focusedObjectId ? 1 : 0.28 } as React.CSSProperties}>
-              {/* Plinth Base Box (h=14) */}
-              <Bx x={190} y={8} w={54} d={40} h={14} color="#0f172a" frontColor="#020617" />
-              {/* Glass Cabinet Box (h=80, z=14) */}
-              <Bx x={190} y={8} w={54} d={40} h={80} z={14} color="rgba(56,189,248,0.22)" frontColor="rgba(56,189,248,0.32)" />
-              {/* Internal Glowing Artifact Cubes */}
-              <Bx x={200} y={18} w={14} d={14} h={14} z={22} color="#38bdf8" frontColor="#0284c7" />
-              <Bx x={222} y={22} w={14} d={14} h={14} z={54} color="#4ade80" frontColor="#16a34a" />
+              {/* Plinth Base Box (h=16) */}
+              <Box3D x={190} y={8} w={56} d={42} h={16} topColor="#334155" frontColor="#1e293b" leftColor="#0f172a" />
+              {/* Glass Cabinet Frame Box (h=86, z=16) */}
+              <Box3D x={190} y={8} w={56} d={42} h={86} z={16} topColor="rgba(56,189,248,0.35)" frontColor="rgba(56,189,248,0.25)" leftColor="rgba(3,105,161,0.2)" />
+              {/* Shelf 1 Glass Plane Box */}
+              <Box3D x={192} y={10} w={52} d={38} h={3} z={45} topColor="rgba(56,189,248,0.5)" frontColor="#0284c7" leftColor="#0369a1" />
+              {/* Shelf 2 Glass Plane Box */}
+              <Box3D x={192} y={10} w={52} d={38} h={3} z={75} topColor="rgba(56,189,248,0.5)" frontColor="#0284c7" leftColor="#0369a1" />
+              {/* Internal Glowing Artifact Cube 1 (Shelf 1) */}
+              <Box3D x={202} y={20} w={16} d={16} h={16} z={48} topColor="#38bdf8" frontColor="#0284c7" leftColor="#0369a1" />
+              {/* Internal Glowing Artifact Cube 2 (Shelf 2) */}
+              <Box3D x={224} y={22} w={16} d={16} h={16} z={78} topColor="#4ade80" frontColor="#16a34a" leftColor="#15803d" />
             </div>
 
             {/* OBJECT 3: LONG WORKBENCH (Mat + PCB + Breadboard + Multimeter + Soldering Iron) */}
             <div style={{ '--o': focusedObjectId === 'workstation' || !focusedObjectId ? 1 : 0.28 } as React.CSSProperties}>
               {/* Main Workbench Frame Box (h=34) */}
-              <Bx x={184} y={78} w={62} d={112} h={34} color="#064e3b" frontColor="#1e293b" />
-              {/* Green PCB Box */}
-              <Bx x={194} y={90} w={24} d={32} h={4} z={34} color="#15803d" frontColor="#166534" />
-              {/* White Breadboard Box */}
-              <Bx x={222} y={100} w={18} d={26} h={5} z={34} color="#f8fafc" frontColor="#cbd5e1" />
-              {/* Yellow Multimeter Box */}
-              <Bx x={196} y={135} w={14} d={20} h={8} z={34} color="#eab308" frontColor="#ca8a04" />
-              {/* Soldering Iron Stand Box */}
-              <Bx x={224} y={160} w={12} d={16} h={8} z={34} color="#334155" frontColor="#1e293b" />
-              {/* Glowing Soldering Tip */}
+              <Box3D x={184} y={78} w={66} d={116} h={34} topColor="#065f46" frontColor="#1e293b" leftColor="#0f172a" />
+              {/* Green PCB Box (h=5, z=34) */}
+              <Box3D x={194} y={90} w={26} d={34} h={5} z={34} topColor="#16a34a" frontColor="#15803d" leftColor="#14532d" />
+              {/* White Breadboard Box (h=6, z=34) */}
+              <Box3D x={222} y={100} w={20} d={28} h={6} z={34} topColor="#ffffff" frontColor="#cbd5e1" leftColor="#94a3b8" />
+              {/* Yellow Multimeter Box (h=10, z=34) */}
+              <Box3D x={196} y={135} w={14} d={22} h={10} z={34} topColor="#facc15" frontColor="#eab308" leftColor="#ca8a04" />
+              {/* Soldering Iron Stand Box (h=10, z=34) */}
+              <Box3D x={224} y={160} w={14} d={18} h={10} z={34} topColor="#475569" frontColor="#334155" leftColor="#1e293b" />
+              {/* Glowing Soldering Iron Tip */}
               <div 
                 className="animate-solder-glow"
                 style={{
                   position: 'absolute',
-                  left: '228px',
-                  top: '166px',
-                  width: '4px',
-                  height: '4px',
+                  left: '229px',
+                  top: '167px',
+                  width: '5px',
+                  height: '5px',
                   borderRadius: '50%',
                   background: '#f97316',
-                  transform: 'translateZ(43px)',
+                  transform: 'translateZ(44px)',
                   transformStyle: 'preserve-3d',
                 }}
               />
@@ -891,65 +933,67 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
 
             {/* OBJECT 4: DESK, LAPTOP, CHAIR & SEATED CHARACTER */}
             <div style={{ '--o': focusedObjectId === 'about' || !focusedObjectId ? 1 : 0.28 } as React.CSSProperties}>
-              {/* Desk Top Box (h=28) */}
-              <Bx x={84} y={62} w={66} d={34} h={28} color="#78350f" frontColor="#451a03" />
-              {/* Laptop Base Box (h=3, z=28) */}
-              <Bx x={104} y={70} w={20} d={14} h={3} z={28} color="#334155" frontColor="#1e293b" />
-              {/* Upright Laptop Screen Box with Glowing Cyan Front Face (--fc: #00f0ff) */}
-              <Bx x={104} y={70} w={20} d={3} h={14} z={31} color="#0f172a" frontColor="#00f0ff" />
-              {/* Chair Seat Box (h=14) */}
-              <Bx x={108} y={86} w={20} d={18} h={14} color="#1e293b" frontColor="#0f172a" />
-              {/* Seated Person SVG Billboard */}
+              {/* Desk Top Box (h=30) */}
+              <Box3D x={84} y={62} w={70} d={36} h={30} topColor="#92400e" frontColor="#78350f" leftColor="#451a03" />
+              {/* Laptop Base Box (h=4, z=30) */}
+              <Box3D x={104} y={70} w={22} d={16} h={4} z={30} topColor="#475569" frontColor="#334155" leftColor="#1e293b" />
+              {/* Upright Laptop Screen Box with Glowing Cyan Front Face */}
+              <Box3D x={104} y={70} w={22} d={4} h={16} z={34} topColor="#1e293b" frontColor="#00f0ff" leftColor="#0f172a" />
+              {/* Chair Seat Box (h=16) */}
+              <Box3D x={108} y={86} w={22} d={20} h={16} topColor="#334155" frontColor="#1e293b" leftColor="#0f172a" />
+              {/* Chair Backrest Box (h=18, z=16) */}
+              <Box3D x={108} y={102} w={22} d={4} h={18} z={16} topColor="#1e293b" frontColor="#0f172a" leftColor="#020617" />
+              {/* Seated Person Screen-Facing Billboard (Albert) */}
               <div
                 style={{
                   position: 'absolute',
-                  left: '114px',
+                  left: '115px',
                   top: '88px',
-                  width: '30px',
-                  height: '42px',
+                  width: '34px',
+                  height: '48px',
                   transformOrigin: '50% 100%',
-                  transform: 'translateZ(14px) rotateZ(45deg) rotateX(-58deg)',
+                  transform: 'translateZ(16px) rotateZ(45deg) rotateX(-58deg)',
                   transformStyle: 'preserve-3d',
                   pointerEvents: 'none',
                 }}
               >
-                <svg width="30" height="42" viewBox="0 0 32 46" fill="none">
-                  <path d="M6 18 C6 10, 26 10, 26 18" stroke="#38bdf8" strokeWidth="2.5" fill="none" />
-                  <circle cx="16" cy="14" r="7" fill="#78350f" stroke="#fde047" strokeWidth="1" />
-                  <path d="M8 24 C8 20, 24 20, 24 24 L26 44 L6 44 Z" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.2" />
-                  <path d="M8 26 L14 34 L20 34 L24 26" stroke="#94a3b8" strokeWidth="2" fill="none" />
+                <svg width="34" height="48" viewBox="0 0 34 48" fill="none">
+                  <path d="M7 18 C7 9, 27 9, 27 18" stroke="#38bdf8" strokeWidth="2.8" fill="none" />
+                  <circle cx="17" cy="14" r="7.5" fill="#78350f" stroke="#fde047" strokeWidth="1.2" />
+                  <path d="M8 24 C8 20, 26 20, 26 24 L28 46 L6 46 Z" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.5" />
+                  <path d="M8 26 L15 35 L21 35 L26 26" stroke="#94a3b8" strokeWidth="2.2" fill="none" />
                 </svg>
               </div>
             </div>
 
             {/* OBJECT 5: NOTEBOOK TABLE & STACKED NOTEBOOKS */}
             <div style={{ '--o': focusedObjectId === 'journal' || !focusedObjectId ? 1 : 0.28 } as React.CSSProperties}>
-              {/* Table Box (h=18) */}
-              <Bx x={40} y={142} w={46} d={30} h={18} color="#475569" frontColor="#334155" />
-              {/* 3 Stacked Colored Notebook Boxes */}
-              <Bx x={48} y={148} w={18} d={16} h={4} z={18} color="#38bdf8" />
-              <Bx x={50} y={150} w={18} d={16} h={4} z={22} color="#f59e0b" />
-              <Bx x={46} y={152} w={18} d={16} h={4} z={26} color="#a855f7" />
+              {/* Table Box (h=20) */}
+              <Box3D x={40} y={142} w={48} d={32} h={20} topColor="#64748b" frontColor="#475569" leftColor="#334155" />
+              {/* Stacked Colored Notebook Boxes */}
+              <Box3D x={48} y={148} w={20} d={18} h={5} z={20} topColor="#38bdf8" frontColor="#0284c7" leftColor="#0369a1" />
+              <Box3D x={50} y={150} w={20} d={18} h={5} z={25} topColor="#fbbf24" frontColor="#d97706" leftColor="#b45309" />
+              <Box3D x={46} y={152} w={20} d={18} h={5} z={30} topColor="#c084fc" frontColor="#9333ea" leftColor="#7e22ce" />
             </div>
 
             {/* OBJECT 6: WOODEN CRATE & BROKEN PCB */}
             <div style={{ '--o': focusedObjectId === 'failed' || !focusedObjectId ? 1 : 0.28 } as React.CSSProperties}>
-              {/* Crate Box (h=14) */}
-              <Bx x={18} y={196} w={36} d={28} h={14} color="#78350f" frontColor="#451a03" />
-              {/* Broken PCB Box (h=4, z=14) */}
-              <Bx x={24} y={202} w={18} d={14} h={4} z={14} color="#991b1b" frontColor="#7f1d1d" />
+              {/* Wooden Crate Box (h=20) */}
+              <Box3D x={18} y={196} w={38} d={30} h={20} topColor="#92400e" frontColor="#78350f" leftColor="#451a03" />
+              {/* Broken PCB Box (h=5, z=20) */}
+              <Box3D x={24} y={202} w={20} d={16} h={5} z={20} topColor="#dc2626" frontColor="#b91c1c" leftColor="#7f1d1d" />
             </div>
 
             {/* OBJECT 7: CRT TERMINAL ON STAND */}
             <div style={{ '--o': focusedObjectId === 'terminal' || !focusedObjectId ? 1 : 0.28 } as React.CSSProperties}>
-              {/* Stand Box (h=30) */}
-              <Bx x={192} y={204} w={44} d={32} h={30} color="#334155" frontColor="#1e293b" />
-              {/* CRT Monitor Box with Green Glowing Front Face (--fc: #00ff66) */}
-              <Bx x={196} y={208} w={36} d={24} h={26} z={30} color="#1e293b" frontColor="#00ff66" />
+              {/* Pedestal Stand Box (h=32) */}
+              <Box3D x={192} y={204} w={46} d={34} h={32} topColor="#475569" frontColor="#334155" leftColor="#1e293b" />
+              {/* CRT Monitor Box with GREEN GLOWING CRT FRONT FACE */}
+              <Box3D x={196} y={208} w={38} d={26} h={28} z={32} topColor="#1e293b" frontColor="#22c55e" leftColor="#0f172a" />
             </div>
 
 
-            {/* PROBLEM 2 & 3: HOTSPOTS ANCHORED AT OBJECT GROUND POINT & NON-OVERLAPPING LABELS */}
+            {/* HOTSPOTS ANCHORED AT OBJECT GROUND POINT & NON-OVERLAPPING LABELS */}
             {MOBILE_OBJECTS.map((obj) => {
               const isFocused = focusedObjectId === obj.id;
               const hasBeenTapped = tappedObjects.has(obj.id);
@@ -960,8 +1004,8 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
               const cy = obj.pos.y + obj.boxSize.d / 2;
               const totalBoxH = obj.boxSize.h;
               
-              // Height of hotspot button in billboard space (~0.85 * totalBoxH)
-              const buttonH = Math.max(44, Math.round(totalBoxH * 0.85));
+              // Height of hotspot button in billboard space (~0.9 * totalBoxH)
+              const buttonH = Math.max(44, Math.round(totalBoxH * 0.9));
               const currentSide = labelSides[obj.id] || obj.defaultSide;
 
               return (
@@ -974,7 +1018,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                     transformOrigin: '50% 100%',
                     transform: `translateZ(0px) rotateZ(45deg) rotateX(-58deg)`,
                     transformStyle: 'preserve-3d',
-                    zIndex: 50,
+                    zIndex: 60,
                   }}
                 >
                   {/* Invisible Button Anchored at Bottom-Centre Ground Point */}
@@ -993,7 +1037,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                       outline: 'none',
                     }}
                   >
-                    {/* Pulsing Dot at TOP-CENTRE of Button (Visually rests on top of the 3D box) */}
+                    {/* Pulsing Dot at TOP-CENTRE of Button (Rests on top of the 3D box) */}
                     <div 
                       style={{
                         position: 'absolute',
@@ -1018,7 +1062,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                     </div>
                   </button>
 
-                  {/* PROBLEM 3: Max 10 Char One-Line Label Belonging to Dot/Ground Point */}
+                  {/* Max 10 Char One-Line Label Belonging to Dot/Ground Point */}
                   <div
                     style={{
                       position: 'absolute',
@@ -1034,7 +1078,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                         ? `translate(6px, -${buttonH}px)`
                         : currentSide === 'above'
                         ? `translate(-50%, -${buttonH + 16}px)`
-                        : `translate(-50%, 6px)`, // 'below' ground point
+                        : `translate(-50%, 6px)`,
                     }}
                   >
                     <span 
