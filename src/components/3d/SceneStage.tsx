@@ -83,7 +83,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
   // Helper to compute depth fog style (opacity & contrast based on distance from camera)
   const getPropFogStyle = (propZ: number) => {
     const dist = Math.abs(curZ + propZ);
-    
+
     let opacity = 1;
     let isInteractive = false;
 
@@ -96,7 +96,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
       opacity = 1;
       isInteractive = true;
     }
-    
+
     opacity = Math.max(0, Math.min(1, Math.round(opacity * 50) / 50));
     const visibility = opacity > 0.01 ? 'visible' : 'hidden';
 
@@ -111,7 +111,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
 
   return (
     <div className="relative bg-[#050810] text-slate-100 selection:bg-sky-500/30 selection:text-sky-200">
-      
+
       {/* Visually Hidden Skip Links for Keyboard & Screen Reader Users */}
       <div className="sr-only focus-within:not-sr-only">
         {WORKSHOP_STATIONS.map((st, idx) => (
@@ -208,15 +208,15 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                         {/* Antenna Pole & LED */}
                         <line x1="100" y1="36" x2="100" y2="18" stroke="#38bdf8" strokeWidth="3" />
                         <circle cx="100" cy="14" r="5" fill="#fb923c" className="animate-pulse" />
-                        
+
                         {/* Interactive Head Group (Tilts & Moves with Cursor) */}
-                        <g style={{ 
-                          transform: `translate(${mascotMousePos.x * 0.5}px, ${mascotMousePos.y * 0.5}px)`, 
-                          transition: 'transform 0.08s ease-out' 
+                        <g style={{
+                          transform: `translate(${mascotMousePos.x * 0.5}px, ${mascotMousePos.y * 0.5}px)`,
+                          transition: 'transform 0.08s ease-out'
                         }}>
                           {/* Outer Head Frame */}
                           <rect x="44" y="36" width="112" height="56" rx="12" fill="#090d16" stroke="#38bdf8" strokeWidth="3" />
-                          
+
                           {/* Inner Screen Visor */}
                           <rect x="52" y="42" width="96" height="44" rx="8" fill="#020617" stroke="#0284c7" strokeWidth="1.5" />
 
@@ -367,7 +367,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                   frontContent={
                     <div className="w-full h-full flex flex-col justify-between items-center p-2.5 font-mono-tech select-none">
                       <div className="text-[8px] text-cyan-400 font-bold uppercase tracking-widest">// FINISHED</div>
-                      
+
                       {/* Physical Prop Graphics: Microchip + PCB Trace Lines */}
                       <div className="relative p-3 bg-slate-950 rounded-lg border border-cyan-500/40 text-cyan-400 shadow-inner w-full flex flex-col items-center">
                         <Cpu className="w-6 h-6 animate-pulse z-10" />
@@ -520,7 +520,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                         <rect x="10" y="10" width="130" height="60" rx="3" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1" />
                         <line x1="15" y1="22" x2="135" y2="22" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" />
                         <line x1="15" y1="58" x2="135" y2="58" stroke="#3b82f6" strokeWidth="1" strokeDasharray="2 2" />
-                        
+
                         {/* DIP-16 Microchip on Breadboard */}
                         <rect x="50" y="30" width="50" height="20" rx="2" fill="#0f172a" stroke="#38bdf8" strokeWidth="1" />
                         <circle cx="56" cy="40" r="2" fill="#38bdf8" />
@@ -615,7 +615,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                         {/* Glowing Tip */}
                         <circle cx="180" cy="18" r="4" fill="#ff6600" className="animate-ping" opacity="0.7" />
                         <circle cx="180" cy="18" r="2.5" fill="#ffffff" />
-                        
+
                         {/* Solder Wire Reel */}
                         <circle cx="130" cy="50" r="10" fill="#94a3b8" stroke="#475569" strokeWidth="1" />
                         <circle cx="130" cy="50" r="4" fill="#0f172a" />
@@ -646,7 +646,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
               <div
                 className="absolute transition-all duration-300"
                 style={{
-                  transform: 'translate3d(-380px, -30px, -3000px) translate(-50%, -50%)',
+                  transform: 'translate3d(-250px, -30px, -3000px) translate(-50%, -50%)',
                   transformStyle: 'preserve-3d',
                   ...fog,
                 }}
@@ -701,7 +701,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
               <div
                 className="absolute transition-all duration-300"
                 style={{
-                  transform: 'translate3d(340px, 20px, -3000px) translate(-50%, -50%)',
+                  transform: 'translate3d(280px, 20px, -3000px) translate(-50%, -50%)',
                   transformStyle: 'preserve-3d',
                   ...fog,
                 }}
@@ -747,7 +747,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                     }
 
                     const latest = allJournals[0];
-                    const formattedLogs = allJournals.flatMap(j => 
+                    const formattedLogs = allJournals.flatMap(j =>
                       (j.logEntries && j.logEntries.length > 0) ? j.logEntries.map(l => ({
                         ...l,
                         content: l.content || j.content
