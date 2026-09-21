@@ -414,19 +414,70 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
         };
       }
       case 'journal': {
-        const j = W.journal?.[0];
+        let journalList = W.journal;
+        if (typeof window !== 'undefined') {
+          const stored = localStorage.getItem('albert-portfolio-posts');
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                journalList = parsed.map((p: any) => ({
+                  id: p.id,
+                  title: p.title,
+                  date: p.date,
+                  readTime: p.readTime || '5 min read',
+                  category: p.category || 'Journal',
+                  summary: p.excerpt || (p.content ? p.content.slice(0, 150) + '...' : ''),
+                  bullets: [p.title, `Published: ${p.date}`, `Category: ${p.category || 'Development'}`],
+                  content: p.content,
+                  logEntries: [
+                    {
+                      id: `log-${p.id}`,
+                      date: p.date,
+                      title: p.title,
+                      abstract: p.excerpt || (p.content ? p.content.slice(0, 140) + '...' : ''),
+                      content: p.content,
+                      thumbnailType: (p.category === 'Hardware' ? 'oscilloscope' : p.category === 'Development' ? 'code' : 'vision') as any,
+                      tags: [p.category || 'Journal', p.readTime || '5 min read']
+                    }
+                  ]
+                }));
+              }
+            } catch (e) {
+              console.warn("Could not parse dynamic posts in mobile stage:", e);
+            }
+          }
+        }
+
+        const j = journalList[0];
         if (!j) return null;
+
+        const formattedLogs = journalList.flatMap(item => 
+          (item.logEntries && item.logEntries.length > 0) ? item.logEntries.map(l => ({
+            ...l,
+            content: l.content || item.content
+          })) : [{
+            id: item.id,
+            date: item.date,
+            title: item.title,
+            abstract: item.summary,
+            content: item.content,
+            thumbnailType: (item.category === 'Hardware' ? 'oscilloscope' : item.category === 'Development' ? 'code' : item.category === 'Life & Tech' ? 'vision' : 'circuit') as any,
+            tags: [item.category, item.readTime]
+          }]
+        );
+
         return {
-          title: j.title, placard: 'RESEARCH JOURNAL', summary: j.summary,
+          title: j.title, placard: `RESEARCH JOURNAL (${journalList.length} POSTS)`, summary: j.summary,
           bullets: (j.bullets ?? []).slice(0, 3),
           onOpenFull: () => openModal({
             title: j.title, placard: `JOURNAL // ${j.category}`, summary: j.summary, bullets: j.bullets,
             tags: ['JOURNAL', j.category, j.readTime],
             fullDetails: {
               overview: j.content,
-              schematicNotes: [`Published: ${j.date}`, `Read Time: ${j.readTime}`],
+              schematicNotes: [`Published: ${j.date}`, `Read Time: ${j.readTime}`, `Total Posts: ${journalList.length}`],
             },
-            logEntries: W.journal.flatMap((x) => x.logEntries || []),
+            logEntries: formattedLogs,
           }),
         };
       }
