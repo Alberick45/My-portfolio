@@ -194,6 +194,21 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
   });
   const [modalState, setModalState] = useState<ModalData>({ isOpen: false, title: '', summary: '' });
 
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const seconds = now.getSeconds();
+  const minutes = now.getMinutes() + seconds / 60;
+  const hours = (now.getHours() % 12) + minutes / 60;
+
+  const secondDeg = seconds * 6;
+  const minuteDeg = minutes * 6;
+  const hourDeg = hours * 30;
+
+
   const focusedRef = useRef<string | null>(null);
   focusedRef.current = focusedObjectId;
 
@@ -687,20 +702,61 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                     borderBottom: '2px solid #334155',
                   }}
                 >
+                  {/* Prominent High-Visibility A3PK LABS Signboard */}
                   <div style={{
-                    position: 'absolute', left: 12, top: 8, padding: '2px 6px', background: '#020617',
-                    border: '1px solid #eab308', borderRadius: 3, color: '#eab308',
-                    fontSize: 6, fontWeight: 'bold', letterSpacing: 0.8,
+                    position: 'absolute', left: 8, top: 8, padding: '3px 8px', background: '#020617',
+                    border: '1.5px solid #f59e0b', borderRadius: 4,
+                    boxShadow: '0 0 14px rgba(245, 158, 11, 0.6)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    transform: 'translateZ(0.5px)',
                   }}>
-                    BUILD · BREAK · LEARN · REPEAT
+                    <div style={{
+                      color: '#fbbf24', fontSize: 8, fontWeight: 900, fontFamily: 'monospace',
+                      letterSpacing: '1.2px', textShadow: '0 0 6px rgba(245, 158, 11, 0.8)',
+                      lineHeight: 1,
+                    }}>
+                      A3PK LABS
+                    </div>
+                    <div style={{
+                      color: '#cbd5e1', fontSize: 5, fontWeight: 700, fontFamily: 'monospace',
+                      letterSpacing: '0.6px', marginTop: 2, whiteSpace: 'nowrap',
+                    }}>
+                      BUILD · BREAK · LEARN · REPEAT
+                    </div>
                   </div>
+
+                  {/* Dynamic Realtime Wall Clock */}
                   <div style={{
-                    position: 'absolute', left: 215, top: 10, width: 16, height: 16, borderRadius: '50%',
-                    border: '1.5px solid #38bdf8', background: '#090d16',
-                    display: 'flex', alignItems: 'center', justifyCenter: 'center',
+                    position: 'absolute', left: 205, top: 8, width: 24, height: 24, borderRadius: '50%',
+                    border: '2px solid #475569', background: '#020617',
+                    boxShadow: '0 0 10px rgba(56,189,248,0.4)',
+                    transform: 'translateZ(0.5px)', pointerEvents: 'none',
                   }}>
-                    <div style={{ width: 4, height: 1.5, background: '#38bdf8', transform: 'rotate(45deg)' }} />
+                    {/* Hour hand */}
+                    <div style={{
+                      position: 'absolute', left: 11, top: 6, width: 2, height: 6,
+                      background: '#f8fafc', borderRadius: 1,
+                      transformOrigin: '50% 100%', transform: `rotate(${hourDeg}deg)`
+                    }} />
+                    {/* Minute hand */}
+                    <div style={{
+                      position: 'absolute', left: 11.25, top: 4, width: 1.5, height: 8,
+                      background: '#38bdf8', borderRadius: 1,
+                      transformOrigin: '50% 100%', transform: `rotate(${minuteDeg}deg)`
+                    }} />
+                    {/* Second hand */}
+                    <div style={{
+                      position: 'absolute', left: 11.5, top: 3, width: 1, height: 9,
+                      background: '#f59e0b',
+                      transformOrigin: '50% 100%', transform: `rotate(${secondDeg}deg)`
+                    }} />
+                    {/* Center pin */}
+                    <div style={{
+                      position: 'absolute', left: 10.5, top: 10.5, width: 3, height: 3,
+                      borderRadius: '50%', background: '#f59e0b', zIndex: 5
+                    }} />
                   </div>
+
                   <div style={{ position: 'absolute', left: 175, top: 35, opacity: 0.6 }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5">
                       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
@@ -831,6 +887,20 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
                 <Group dim={dimFor('terminal')}>
                   <Box3D x={192} y={204} w={46} d={34} h={32} topColor="#475569" frontColor="#334155" leftColor="#1e293b" />
                   <Box3D x={196} y={208} w={38} d={26} h={28} z={32} topColor="#1e293b" frontColor="#22c55e" leftColor="#0f172a" />
+                  <Billboard gx={215} gy={221} w={56} h={26} z={60}>
+                    <div style={{
+                      background: '#020617', border: '1.5px solid #f59e0b', borderRadius: 4,
+                      boxShadow: '0 0 10px rgba(245, 158, 11, 0.6)', padding: '2px 4px',
+                      textAlign: 'center', fontFamily: 'monospace',
+                    }}>
+                      <div style={{ color: '#fbbf24', fontSize: 7, fontWeight: 900, letterSpacing: '1px' }}>
+                        A3PK LABS
+                      </div>
+                      <div style={{ color: '#4ade80', fontSize: 6, fontWeight: 700, letterSpacing: '0.5px' }}>
+                        &gt; CRT TERMINAL
+                      </div>
+                    </div>
+                  </Billboard>
                 </Group>
 
                 {/* ---------------- HOTSPOTS ---------------- */}

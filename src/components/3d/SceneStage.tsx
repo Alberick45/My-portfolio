@@ -853,16 +853,21 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                   faceClassName="bg-slate-900/95 border-2 border-sky-400/80 shadow-[0_0_45px_rgba(56,189,248,0.5)] hover:border-sky-300 hover:shadow-[0_0_60px_rgba(56,189,248,0.7)] transition-all"
                   frontContent={
                     <div className="w-full h-full flex flex-col justify-between items-center p-3 font-mono-tech select-none">
-                      <div className="flex justify-between items-center w-full text-[8px] text-sky-400">
-                        <span>[CRT_SYSTEM_06]</span>
-                        <span className="flex items-center"><Terminal size={10} className="mr-1 animate-pulse" /> /HELP ACTIVE</span>
+                      <div className="flex justify-between items-center w-full text-[8px]">
+                        <span className="font-extrabold text-amber-400 text-[10px] tracking-widest bg-slate-950 border border-amber-500/60 px-2 py-0.5 rounded shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+                          A3PK LABS
+                        </span>
+                        <span className="flex items-center text-emerald-400 font-bold"><Terminal size={10} className="mr-1 animate-pulse" /> /HELP ACTIVE</span>
                       </div>
 
                       {/* CRT Screen Graphics with Scanlines & Green Prompt */}
-                      <div className="relative bg-slate-950 border-2 border-sky-500/50 rounded-lg p-2.5 text-center w-full my-1 overflow-hidden shadow-inner">
+                      <div className="relative bg-slate-950 border-2 border-sky-500/50 rounded-lg p-2 text-center w-full my-1 overflow-hidden shadow-inner">
                         {/* Scanline overlay */}
                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] pointer-events-none opacity-60" />
-                        <Terminal className="w-6 h-6 text-emerald-400 mx-auto mb-1 animate-pulse" />
+                        <div className="flex items-center justify-center space-x-1.5 mb-0.5">
+                          <Terminal className="w-5 h-5 text-emerald-400 animate-pulse" />
+                          <span className="text-[11px] font-extrabold text-amber-400 tracking-widest">A3PK LABS // CLI</span>
+                        </div>
                         <div className="text-xs font-bold text-white">CONTACT & TERMINAL</div>
                         <div className="text-[9px] text-emerald-400 font-mono-tech mt-0.5">&gt; CLICK TO LAUNCH CLI</div>
                       </div>
