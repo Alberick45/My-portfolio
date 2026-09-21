@@ -203,6 +203,7 @@ const Box3D: React.FC<Box3DProps> = ({
 export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpenTerminal }) => {
   const roomRef = useRef<HTMLDivElement>(null);
   const [scaleS, setScaleS] = useState(1);
+  const scaleRef = useRef(1);
   const [measuredBounds, setMeasuredBounds] = useState<{ width: number; height: number }>({ width: 350, height: 260 });
   const [focusedObjectId, setFocusedObjectId] = useState<string | null>(null);
   const [hasTapped, setHasTapped] = useState(false);
@@ -229,7 +230,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
 
   const closeModal = useCallback(() => setModalState((prev) => ({ ...prev, isOpen: false })), []);
 
-  // Measure, don't guess! Dynamic viewport bounding box calculation
+  // Measure, don't guess! Dynamic viewport bounding box calculation (Infinite-loop safe)
   const updateScaleAndBounds = useCallback(() => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -240,20 +241,26 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
 
     if (roomRef.current) {
       const rect = roomRef.current.getBoundingClientRect();
-      const currentScale = scaleS || 1;
+      const currentScale = scaleRef.current || 1;
       const unscaledW = rect.width / currentScale;
       const unscaledH = rect.height / currentScale;
 
       const calcScale = Math.min(targetW / Math.max(unscaledW, 320), targetH / Math.max(unscaledH, 240), 2.2);
-      setScaleS(calcScale);
-      setMeasuredBounds({ width: Math.round(rect.width), height: Math.round(rect.height) });
+      if (Math.abs(calcScale - scaleRef.current) > 0.01) {
+        scaleRef.current = calcScale;
+        setScaleS(calcScale);
+        setMeasuredBounds({ width: Math.round(rect.width), height: Math.round(rect.height) });
+      }
     } else {
       const calcScale = Math.min(targetW / 350, targetH / 260, 2.2);
-      setScaleS(calcScale);
+      if (Math.abs(calcScale - scaleRef.current) > 0.01) {
+        scaleRef.current = calcScale;
+        setScaleS(calcScale);
+      }
     }
-  }, [scaleS]);
+  }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     updateScaleAndBounds();
     window.addEventListener('resize', updateScaleAndBounds);
     window.addEventListener('orientationchange', updateScaleAndBounds);
@@ -263,9 +270,9 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
     };
   }, [updateScaleAndBounds]);
 
-  // Label Collision Detection Pass
-  useLayoutEffect(() => {
-    const checkLabelCollisions = () => {
+  // Label Collision Detection Pass (Infinite-loop safe)
+  useEffect(() => {
+    const timer = setTimeout(() => {
       const nodes = Object.entries(labelRefs.current);
       const rects: { id: string; rect: DOMRect }[] = [];
       
@@ -275,42 +282,44 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
         }
       });
 
+      if (rects.length === 0) return;
+
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const margin = 8;
-      const updated = { ...labelSides };
-      let changed = false;
 
-      rects.forEach(({ id, rect }) => {
-        let currentSide = updated[id] || 'below';
-        const isOutOfBounds = rect.left < margin || rect.right > vw - margin || rect.top < margin || rect.bottom > vh - margin;
-        
-        const overlaps = rects.some(other => {
-          if (other.id === id) return false;
-          return !(
-            rect.right < other.rect.left ||
-            rect.left > other.rect.right ||
-            rect.bottom < other.rect.top ||
-            rect.top > other.rect.bottom
-          );
+      setLabelSides(prev => {
+        const updated = { ...prev };
+        let changed = false;
+
+        rects.forEach(({ id, rect }) => {
+          let currentSide = updated[id] || 'below';
+          const isOutOfBounds = rect.left < margin || rect.right > vw - margin || rect.top < margin || rect.bottom > vh - margin;
+          
+          const overlaps = rects.some(other => {
+            if (other.id === id) return false;
+            return !(
+              rect.right < other.rect.left ||
+              rect.left > other.rect.right ||
+              rect.bottom < other.rect.top ||
+              rect.top > other.rect.bottom
+            );
+          });
+
+          if (isOutOfBounds || overlaps) {
+            const cycle: ('below' | 'left' | 'right' | 'above')[] = ['left', 'right', 'below', 'above'];
+            const nextSide = cycle[(cycle.indexOf(currentSide) + 1) % cycle.length];
+            updated[id] = nextSide;
+            changed = true;
+          }
         });
 
-        if (isOutOfBounds || overlaps) {
-          const cycle: ('below' | 'left' | 'right' | 'above')[] = ['left', 'right', 'below', 'above'];
-          const nextSide = cycle[(cycle.indexOf(currentSide) + 1) % cycle.length];
-          updated[id] = nextSide;
-          changed = true;
-        }
+        return changed ? updated : prev;
       });
+    }, 200);
 
-      if (changed) {
-        setLabelSides(updated);
-      }
-    };
-
-    const timer = setTimeout(checkLabelCollisions, 100);
     return () => clearTimeout(timer);
-  }, [scaleS, labelSides]);
+  }, [scaleS]);
 
   // Intro animation trigger
   useEffect(() => {
