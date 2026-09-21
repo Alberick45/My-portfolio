@@ -727,33 +727,57 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
 
                   {/* Dynamic Realtime Wall Clock */}
                   <div style={{
-                    position: 'absolute', left: 205, top: 8, width: 24, height: 24, borderRadius: '50%',
-                    border: '2px solid #475569', background: '#020617',
-                    boxShadow: '0 0 10px rgba(56,189,248,0.4)',
-                    transform: 'translateZ(0.5px)', pointerEvents: 'none',
+                    position: 'absolute', left: 200, top: 6, width: 28, height: 28, borderRadius: '50%',
+                    border: '2px solid #64748b', background: '#020617',
+                    boxShadow: '0 0 12px rgba(56,189,248,0.4)',
+                    transform: 'translateZ(0.5px)', pointerEvents: 'none', overflow: 'hidden',
                   }}>
-                    {/* Hour hand */}
+                    {/* 12 Hour Dots */}
+                    {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          position: 'absolute', inset: 0, display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+                          transform: `rotate(${deg}deg)`, pointerEvents: 'none',
+                        }}
+                      >
+                        <div style={{
+                          width: i % 3 === 0 ? 2.5 : 1.5,
+                          height: i % 3 === 0 ? 2.5 : 1.5,
+                          borderRadius: '50%',
+                          background: i % 3 === 0 ? '#fbbf24' : '#94a3b8',
+                          marginTop: i % 3 === 0 ? 1 : 1.5,
+                        }} />
+                      </div>
+                    ))}
+
+                    {/* Short & Bold Hour Hand (Pure White) */}
                     <div style={{
-                      position: 'absolute', left: 11, top: 6, width: 2, height: 6,
-                      background: '#f8fafc', borderRadius: 1,
-                      transformOrigin: '50% 100%', transform: `rotate(${hourDeg}deg)`
+                      position: 'absolute', left: 12.5, top: 8, width: 3, height: 6,
+                      background: '#ffffff', borderRadius: 1.5,
+                      boxShadow: '0 0 4px rgba(255,255,255,0.8)',
+                      transformOrigin: '50% 100%', transform: `rotate(${hourDeg}deg)`, zIndex: 10,
                     }} />
-                    {/* Minute hand */}
+
+                    {/* Long & Sleek Minute Hand (Electric Cyan) */}
                     <div style={{
-                      position: 'absolute', left: 11.25, top: 4, width: 1.5, height: 8,
+                      position: 'absolute', left: 13.25, top: 3.5, width: 1.5, height: 10.5,
                       background: '#38bdf8', borderRadius: 1,
-                      transformOrigin: '50% 100%', transform: `rotate(${minuteDeg}deg)`
+                      boxShadow: '0 0 6px rgba(56,189,248,0.9)',
+                      transformOrigin: '50% 100%', transform: `rotate(${minuteDeg}deg)`, zIndex: 10,
                     }} />
-                    {/* Second hand */}
+
+                    {/* Thin Second Hand (Neon Rose) */}
                     <div style={{
-                      position: 'absolute', left: 11.5, top: 3, width: 1, height: 9,
-                      background: '#f59e0b',
-                      transformOrigin: '50% 100%', transform: `rotate(${secondDeg}deg)`
+                      position: 'absolute', left: 13.5, top: 2, width: 1, height: 12,
+                      background: '#f43f5e',
+                      transformOrigin: '50% 100%', transform: `rotate(${secondDeg}deg)`, zIndex: 15,
                     }} />
+
                     {/* Center pin */}
                     <div style={{
-                      position: 'absolute', left: 10.5, top: 10.5, width: 3, height: 3,
-                      borderRadius: '50%', background: '#f59e0b', zIndex: 5
+                      position: 'absolute', left: 12, top: 12, width: 4, height: 4,
+                      borderRadius: '50%', background: '#fbbf24', border: '1px solid #020617', zIndex: 20,
                     }} />
                   </div>
 

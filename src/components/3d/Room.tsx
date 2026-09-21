@@ -20,49 +20,81 @@ export const RealtimeClock: React.FC<{ size?: 'sm' | 'md' }> = ({ size = 'md' })
 
   if (size === 'sm') {
     return (
-      <div className="w-5 h-5 rounded-full border border-sky-400/80 bg-slate-950 flex items-center justify-center relative shadow-md">
+      <div className="w-6 h-6 rounded-full border border-slate-600 bg-slate-950 flex items-center justify-center relative shadow-md overflow-hidden">
+        {/* 12 Hour Dots */}
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute inset-0 flex justify-center items-start pointer-events-none"
+            style={{ transform: `rotate(${i * 30}deg)` }}
+          >
+            <div className={i % 3 === 0 ? "w-1 h-1 rounded-full bg-amber-400 mt-0.5" : "w-[2px] h-[2px] rounded-full bg-slate-400 mt-0.5"} />
+          </div>
+        ))}
+
+        {/* Short Thick Hour Hand (White) */}
         <div 
-          className="w-0.5 h-1.5 bg-sky-300 absolute top-1 rounded-full"
+          className="w-1 h-1.5 bg-white absolute top-1.5 rounded-full z-10"
           style={{ transform: `rotate(${hourDeg}deg)`, transformOrigin: '50% 100%' }}
         />
+        {/* Long Thin Minute Hand (Cyan) */}
         <div 
-          className="w-0.5 h-2 bg-amber-400 absolute top-0.5 rounded-full"
+          className="w-0.5 h-2.5 bg-sky-400 absolute top-0.5 rounded-full z-10"
           style={{ transform: `rotate(${minuteDeg}deg)`, transformOrigin: '50% 100%' }}
         />
+        {/* Second Hand (Rose) */}
         <div 
-          className="w-[1px] h-2.5 bg-rose-500 absolute top-0.5"
+          className="w-[1px] h-2.5 bg-rose-500 absolute top-0.5 z-10"
           style={{ transform: `rotate(${secondDeg}deg)`, transformOrigin: '50% 100%' }}
         />
-        <div className="w-1 h-1 rounded-full bg-slate-100 z-10" />
+        {/* Pivot */}
+        <div className="w-1 h-1 rounded-full bg-amber-400 z-20 border border-slate-900" />
       </div>
     );
   }
 
   return (
-    <div className="w-16 h-16 rounded-full bg-slate-950 border-4 border-slate-700 shadow-[0_0_20px_rgba(56,189,248,0.4)] flex justify-center items-center relative">
-      {/* 12, 3, 6, 9 Ticks */}
-      <div className="w-1 h-1.5 bg-slate-500 absolute top-1 rounded-full" />
-      <div className="w-1.5 h-1 bg-slate-500 absolute right-1 rounded-full" />
-      <div className="w-1 h-1.5 bg-slate-500 absolute bottom-1 rounded-full" />
-      <div className="w-1.5 h-1 bg-slate-500 absolute left-1 rounded-full" />
+    <div className="w-20 h-20 rounded-full bg-slate-950 border-4 border-slate-700 shadow-[0_0_25px_rgba(56,189,248,0.4)] flex justify-center items-center relative overflow-hidden">
+      {/* 12 Hour Dots around circumference */}
+      {[...Array(12)].map((_, i) => {
+        const isMajor = i % 3 === 0; // 12, 3, 6, 9
+        return (
+          <div
+            key={i}
+            className="absolute inset-0 flex justify-center items-start pointer-events-none"
+            style={{ transform: `rotate(${i * 30}deg)` }}
+          >
+            <div
+              className={
+                isMajor
+                  ? "w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.9)] mt-1.5 z-10"
+                  : "w-1.5 h-1.5 rounded-full bg-slate-300/80 mt-2 z-10"
+              }
+            />
+          </div>
+        );
+      })}
 
-      {/* Hour hand */}
+      {/* Short & Extra-Thick Hour Hand (Bright White / Bold) */}
       <div 
-        className="w-1 h-4 bg-slate-100 absolute top-4 rounded-full shadow-sm"
+        className="w-2 h-5 bg-white border border-slate-900 absolute top-5 rounded-full shadow-[0_0_6px_rgba(255,255,255,0.6)] z-20"
         style={{ transform: `rotate(${hourDeg}deg)`, transformOrigin: '50% 100%' }}
       />
-      {/* Minute hand */}
+
+      {/* Long & Sleek Minute Hand (Electric Cyan Blue) */}
       <div 
-        className="w-0.5 h-5 bg-sky-400 absolute top-3 rounded-full shadow-sm"
+        className="w-1 h-8 bg-sky-400 absolute top-2 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.9)] z-20"
         style={{ transform: `rotate(${minuteDeg}deg)`, transformOrigin: '50% 100%' }}
       />
-      {/* Second hand */}
+
+      {/* Thin Second Hand (Neon Rose) */}
       <div 
-        className="w-[1px] h-6 bg-amber-400 absolute top-2 shadow-sm"
+        className="w-[1.5px] h-9 bg-rose-500 absolute top-1 shadow-[0_0_6px_rgba(244,63,94,0.8)] z-30"
         style={{ transform: `rotate(${secondDeg}deg)`, transformOrigin: '50% 100%' }}
       />
-      {/* Pivot */}
-      <div className="w-2 h-2 rounded-full bg-amber-400 z-10 border border-slate-900 shadow" />
+
+      {/* Center Pivot Pin */}
+      <div className="w-3 h-3 rounded-full bg-amber-400 border-2 border-slate-950 shadow-md z-40" />
     </div>
   );
 };
