@@ -5,7 +5,7 @@ export const ROOM_CONFIG = {
   L: 4300,        // Plane length (D + 500)
   CZ: -1650,      // Plane center Z ((500 - D) / 2)
   perspective: 700,
-  maxCameraZ: 3600,
+  maxCameraZ: 3720,
   easing: 0.06,
 };
 

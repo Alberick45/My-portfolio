@@ -815,7 +815,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
               <div
                 className="absolute transition-all duration-300"
                 style={{
-                  transform: 'translate3d(0px, 60px, -3600px) translate(-50%, -50%)',
+                  transform: 'translate3d(0px, 20px, -3600px) translate(-50%, -50%) scale(1.22)',
                   transformStyle: 'preserve-3d',
                   ...fog,
                 }}
