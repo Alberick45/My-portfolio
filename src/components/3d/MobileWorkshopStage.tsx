@@ -493,6 +493,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
               schematicNotes: [`Published: ${j.date}`, `Read Time: ${j.readTime}`, `Total Posts: ${journalList.length}`],
             },
             logEntries: formattedLogs,
+            stationType: 'journal',
           }),
         };
       }
@@ -506,6 +507,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
             title: p.title, placard: p.placard, summary: p.summary, bullets: p.bullets,
             tags: p.tags, externalUrl: p.githubUrl,
             fullDetails: p.fullDetails, logEntries: p.logEntries,
+            stationType: 'project',
           }),
         };
       }
@@ -530,6 +532,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
           onOpenFull: () => openModal({
             title: p.title, placard: p.placard, summary: p.summary, bullets: p.bullets,
             tags: p.tags, fullDetails: p.fullDetails, logEntries: p.logEntries,
+            stationType: 'project',
           }),
         };
       }
@@ -542,6 +545,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
           onOpenFull: () => openModal({
             title: '2026 Engineering Roadmap', placard: 'ROADMAP & GOALS', summary, bullets,
             tags: ['ROADMAP', 'Q1 2026 - Q3 2026', 'A3PK LABS'],
+            stationType: 'roadmap',
           }),
         };
       }
@@ -558,6 +562,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
               overview: 'The CRT Control Desk provides an interactive command line interface (CLI) to query visitor session telemetry or launch admin tools.',
               componentsList: [`Email: ${c.email}`, `Phone: ${c.phone}`, `Location: ${c.location}`],
             },
+            stationType: 'contact',
           }),
         };
       }
@@ -570,6 +575,7 @@ export const MobileWorkshopStage: React.FC<MobileWorkshopStageProps> = ({ onOpen
             title: f.title, placard: f.placard, summary: f.summary, bullets: f.bullets,
             tags: ['FAILURES', 'LESSONS LEARNED', 'HARDWARE'],
             logEntries: f.logEntries,
+            stationType: 'project',
           }),
         };
       }

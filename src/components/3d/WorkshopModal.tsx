@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ExternalLink, Cpu, Terminal, Layers, Wrench, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Calendar, Share2, Twitter, Linkedin, MessageSquare, Copy, Check } from 'lucide-react';
+import { X, ExternalLink, Cpu, Terminal, Layers, Wrench, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Calendar, Share2, Twitter, Linkedin, MessageSquare, Copy, Check, Plus, Edit3, Trash2, Lock, ArrowUpRight } from 'lucide-react';
 import { LogArticle } from '../../config/workshopData';
 
 // Markdown inline style parser (bold **text**, italics *text*)
@@ -223,6 +223,7 @@ export interface ModalData {
   bullets?: string[];
   tags?: string[];
   externalUrl?: string;
+  stationType?: 'journal' | 'project' | 'roadmap' | 'contact' | 'about';
   customContent?: React.ReactNode;
   onFullDetails?: () => void;
   onOpenTerminal?: () => void;
@@ -310,6 +311,235 @@ export const WorkshopModal: React.FC<WorkshopModalProps> = ({ data, onClose }) =
   const [showFullView, setShowFullView] = useState(false);
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const prevIsOpenRef = useRef(false);
+
+  // Admin state & Inline log editor modal state
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
+    return localStorage.getItem('isAdminLoggedIn') === 'true';
+  });
+  const [isLogEditorOpen, setIsLogEditorOpen] = useState(false);
+  const [editingLogId, setEditingLogId] = useState<string | null>(null);
+  const [logFormTitle, setLogFormTitle] = useState('');
+  const [logFormCategory, setLogFormCategory] = useState('Journal');
+  const [logFormExcerpt, setLogFormExcerpt] = useState('');
+  const [logFormContent, setLogFormContent] = useState('');
+  const [logFormReadTime, setLogFormReadTime] = useState('5 min read');
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsAdminLoggedIn(localStorage.getItem('isAdminLoggedIn') === 'true');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Determine exact module/station type
+  const getEffectiveStationType = (): 'journal' | 'project' | 'roadmap' | 'contact' | 'about' => {
+    if (data.stationType) return data.stationType;
+    const placard = (data.placard || '').toLowerCase();
+    const title = (data.title || '').toLowerCase();
+    const tagsStr = (data.tags || []).join(' ').toLowerCase();
+
+    if (placard.includes('logbook') || placard.includes('journal') || tagsStr.includes('journal')) {
+      return 'journal';
+    }
+    if (placard.includes('crt terminal') || placard.includes('contact') || title.includes('crt terminal') || tagsStr.includes('contact') || tagsStr.includes('terminal')) {
+      return 'contact';
+    }
+    if (placard.includes('roadmap') || tagsStr.includes('roadmap') || tagsStr.includes('goal')) {
+      return 'roadmap';
+    }
+    if (placard.includes('about') || tagsStr.includes('about') || tagsStr.includes('philosophy')) {
+      return 'about';
+    }
+    return 'project';
+  };
+
+  const stationType = getEffectiveStationType();
+
+  const handleOpenCreateLog = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingLogId(null);
+    setLogFormTitle('');
+    setLogFormCategory(stationType === 'project' ? 'Hardware' : 'Journal');
+    setLogFormExcerpt('');
+    setLogFormContent('');
+    setLogFormReadTime('5 min read');
+    setIsLogEditorOpen(true);
+  };
+
+  const handleOpenEditLog = (log: LogArticle, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingLogId(log.id);
+    setLogFormTitle(log.title);
+    setLogFormCategory((log.tags && log.tags[0]) || (stationType === 'project' ? 'Hardware' : 'Journal'));
+    setLogFormExcerpt(log.abstract || '');
+    setLogFormContent(log.content || log.abstract || '');
+    setLogFormReadTime((log.tags && log.tags[1]) || '5 min read');
+    setIsLogEditorOpen(true);
+  };
+
+  const handleDeleteLog = (logId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this log entry?")) return;
+
+    if (stationType === 'project') {
+      const savedProjects = localStorage.getItem('workshop_projects');
+      if (savedProjects) {
+        try {
+          const projectsList = JSON.parse(savedProjects);
+          const updated = projectsList.map((proj: any) => {
+            if (proj.logEntries && Array.isArray(proj.logEntries)) {
+              return {
+                ...proj,
+                logEntries: proj.logEntries.filter((l: any) => l.id !== logId && `log-${l.id}` !== logId)
+              };
+            }
+            return proj;
+          });
+          localStorage.setItem('workshop_projects', JSON.stringify(updated));
+          window.dispatchEvent(new Event('storage'));
+        } catch (err) {
+          console.error("Failed to delete project log:", err);
+        }
+      }
+      return;
+    }
+
+    const savedStr = localStorage.getItem('albert-portfolio-posts');
+    if (savedStr) {
+      try {
+        const postsList = JSON.parse(savedStr);
+        const updated = postsList.filter((p: any) => p.id !== logId && `log-${p.id}` !== logId);
+        localStorage.setItem('albert-portfolio-posts', JSON.stringify(updated));
+        window.dispatchEvent(new Event('storage'));
+      } catch (err) {
+        console.error("Failed to delete log entry:", err);
+      }
+    }
+  };
+
+  const handleSaveLogSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!logFormTitle.trim() || !logFormContent.trim()) return;
+
+    const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    if (stationType === 'project') {
+      const savedProjects = localStorage.getItem('workshop_projects');
+      let projectsList: any[] = [];
+      if (savedProjects) {
+        try { projectsList = JSON.parse(savedProjects); } catch (err) {}
+      }
+
+      let updated = false;
+      projectsList = projectsList.map((proj: any) => {
+        if (proj.logEntries && Array.isArray(proj.logEntries)) {
+          const hasLog = proj.logEntries.some((l: any) => l.id === editingLogId || `log-${l.id}` === editingLogId);
+          if (hasLog) {
+            updated = true;
+            return {
+              ...proj,
+              logEntries: proj.logEntries.map((l: any) => {
+                if (l.id === editingLogId || `log-${l.id}` === editingLogId) {
+                  return {
+                    ...l,
+                    title: logFormTitle,
+                    abstract: logFormExcerpt || logFormContent.slice(0, 140) + '...',
+                    content: logFormContent,
+                    date: dateStr
+                  };
+                }
+                return l;
+              })
+            };
+          }
+        }
+        return proj;
+      });
+
+      if (!updated && projectsList.length > 0) {
+        const newLog = {
+          id: `log-${Date.now()}`,
+          date: dateStr,
+          title: logFormTitle,
+          abstract: logFormExcerpt || logFormContent.slice(0, 140) + '...',
+          content: logFormContent,
+          thumbnailType: 'code',
+          tags: [logFormCategory, logFormReadTime]
+        };
+        projectsList[0].logEntries = [newLog, ...(projectsList[0].logEntries || [])];
+      }
+
+      localStorage.setItem('workshop_projects', JSON.stringify(projectsList));
+      window.dispatchEvent(new Event('storage'));
+      setIsLogEditorOpen(false);
+      return;
+    }
+
+    const savedStr = localStorage.getItem('albert-portfolio-posts');
+    let postsList: any[] = [];
+    if (savedStr) {
+      try { postsList = JSON.parse(savedStr); } catch (err) {}
+    }
+
+    if (editingLogId) {
+      postsList = postsList.map((p: any) => {
+        if (p.id === editingLogId || `log-${p.id}` === editingLogId) {
+          return {
+            ...p,
+            title: logFormTitle,
+            category: logFormCategory,
+            excerpt: logFormExcerpt || logFormContent.slice(0, 140) + '...',
+            content: logFormContent,
+            readTime: logFormReadTime
+          };
+        }
+        return p;
+      });
+    } else {
+      const newEntry = {
+        id: Date.now().toString(),
+        title: logFormTitle,
+        date: dateStr,
+        category: logFormCategory,
+        categoryColor: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+        gradient: 'from-sky-500/20 to-blue-600/20',
+        excerpt: logFormExcerpt || logFormContent.slice(0, 140) + '...',
+        content: logFormContent,
+        readTime: logFormReadTime
+      };
+      postsList = [newEntry, ...postsList];
+    }
+
+    localStorage.setItem('albert-portfolio-posts', JSON.stringify(postsList));
+    window.dispatchEvent(new Event('storage'));
+    setIsLogEditorOpen(false);
+  };
+
+  const handleNavigateToJournal = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClose();
+    window.history.pushState({}, '', '/journal');
+    window.dispatchEvent(new Event('pushstate-changed'));
+  };
+
+  const handleNavigateToProjects = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClose();
+    const el = document.getElementById('workshop');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleNavigateToRoadmap = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClose();
+    const el = document.getElementById('roadmap');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     // Only reset state when modal transitions from closed (false) to open (true)
@@ -407,6 +637,101 @@ export const WorkshopModal: React.FC<WorkshopModalProps> = ({ data, onClose }) =
         {/* Scrollable Modal Content */}
         <div className="overflow-y-auto pr-1 space-y-4 flex-1 font-sans">
           
+          {/* Administrator Mode Banner & Contextual Quick Toolbar */}
+          {isAdminLoggedIn && stationType === 'journal' && (
+            <div className="bg-slate-900/90 border border-amber-500/40 rounded-xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-2 font-mono-tech text-xs mb-2">
+              <span className="text-amber-400 font-bold flex items-center gap-1.5">
+                <Lock size={13} className="animate-pulse text-amber-400" />
+                CONSOLE_MODE: ADMINISTRATOR (JOURNAL MODULE)
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleOpenCreateLog}
+                  className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 text-[11px] uppercase transition-all shadow"
+                >
+                  <Plus size={13} />
+                  New Journal Entry
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNavigateToJournal}
+                  className="bg-slate-950 border border-sky-500/40 hover:border-sky-400 text-sky-300 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 text-[11px] uppercase transition-all"
+                >
+                  <ArrowUpRight size={13} />
+                  Full Journal Page
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isAdminLoggedIn && stationType === 'project' && (
+            <div className="bg-slate-900/90 border border-cyan-500/40 rounded-xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-2 font-mono-tech text-xs mb-2">
+              <span className="text-cyan-400 font-bold flex items-center gap-1.5">
+                <Lock size={13} className="animate-pulse text-cyan-400" />
+                CONSOLE_MODE: ADMINISTRATOR (PROJECT MODULE)
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleOpenCreateLog}
+                  className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 text-[11px] uppercase transition-all shadow"
+                >
+                  <Plus size={13} />
+                  Add Project Log
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNavigateToProjects}
+                  className="bg-slate-950 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 text-[11px] uppercase transition-all"
+                >
+                  <ArrowUpRight size={13} />
+                  Manage Projects
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isAdminLoggedIn && stationType === 'contact' && (
+            <div className="bg-slate-900/90 border border-emerald-500/40 rounded-xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-2 font-mono-tech text-xs mb-2">
+              <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                <Lock size={13} className="animate-pulse text-emerald-400" />
+                CONSOLE_MODE: ADMINISTRATOR (CLI & COMMS)
+              </span>
+              {data.onOpenTerminal && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose();
+                    data.onOpenTerminal?.();
+                  }}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 text-[11px] uppercase transition-all shadow"
+                >
+                  <Terminal size={13} className="animate-pulse" />
+                  Launch Admin CLI
+                </button>
+              )}
+            </div>
+          )}
+
+          {isAdminLoggedIn && stationType === 'roadmap' && (
+            <div className="bg-slate-900/90 border border-purple-500/40 rounded-xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-2 font-mono-tech text-xs mb-2">
+              <span className="text-purple-400 font-bold flex items-center gap-1.5">
+                <Lock size={13} className="animate-pulse text-purple-400" />
+                CONSOLE_MODE: ADMINISTRATOR (ROADMAP MODULE)
+              </span>
+              <button
+                type="button"
+                onClick={handleNavigateToRoadmap}
+                className="bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 text-[11px] uppercase transition-all shadow"
+              >
+                <ArrowUpRight size={13} />
+                Manage Roadmap Goals
+              </button>
+            </div>
+          )}
+
           {/* Tags */}
           {data.tags && data.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
@@ -470,9 +795,31 @@ export const WorkshopModal: React.FC<WorkshopModalProps> = ({ data, onClose }) =
                       <div className="flex-1 font-mono-tech text-xs">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-white text-xs">{log.title}</span>
-                          <span className="text-[10px] text-slate-400 flex items-center">
-                            <Calendar size={10} className="mr-1" /> {log.date}
-                          </span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-[10px] text-slate-400 flex items-center">
+                              <Calendar size={10} className="mr-1" /> {log.date}
+                            </span>
+                            {isAdminLoggedIn && (
+                              <div className="flex items-center space-x-1 ml-1">
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleOpenEditLog(log, e)}
+                                  title="Edit Log Entry"
+                                  className="p-1 rounded bg-slate-900 border border-sky-500/40 hover:bg-sky-500 hover:text-slate-950 text-sky-300 transition-all"
+                                >
+                                  <Edit3 size={11} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleDeleteLog(log.id, e)}
+                                  title="Delete Log Entry"
+                                  className="p-1 rounded bg-slate-900 border border-red-500/40 hover:bg-red-500 hover:text-white text-red-400 transition-all"
+                                >
+                                  <Trash2 size={11} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         
                         <p className="font-sans text-xs text-slate-300 mt-1 line-clamp-2">
@@ -650,6 +997,113 @@ export const WorkshopModal: React.FC<WorkshopModalProps> = ({ data, onClose }) =
 
         </div>
       </div>
+
+      {/* Inline Log Editor / Creator Modal Overlay */}
+      {isLogEditorOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="bg-slate-900 border border-sky-500/50 rounded-2xl p-6 w-full max-w-lg shadow-2xl text-slate-100 font-sans max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-sky-950 pb-3 mb-4 font-mono-tech">
+              <h3 className="text-base font-bold text-sky-400 uppercase tracking-wider flex items-center gap-2">
+                <Edit3 size={16} />
+                {editingLogId 
+                  ? (stationType === 'project' ? 'Edit Project Log' : 'Edit Journal Log') 
+                  : (stationType === 'project' ? 'New Project Log Entry' : 'New Journal Log Entry')
+                }
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsLogEditorOpen(false)}
+                className="text-slate-400 hover:text-white p-1"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveLogSubmit} className="space-y-4 text-xs font-mono-tech">
+              <div>
+                <label className="block text-slate-300 mb-1 font-bold">TITLE</label>
+                <input
+                  type="text"
+                  required
+                  value={logFormTitle}
+                  onChange={(e) => setLogFormTitle(e.target.value)}
+                  placeholder="e.g. The Robot I Saw at a Spelling Bee"
+                  className="w-full bg-slate-950 border border-sky-950 rounded-lg p-2.5 text-white font-sans focus:outline-none focus:border-sky-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 mb-1 font-bold">CATEGORY</label>
+                  <select
+                    value={logFormCategory}
+                    onChange={(e) => setLogFormCategory(e.target.value)}
+                    className="w-full bg-slate-950 border border-sky-950 rounded-lg p-2.5 text-white font-sans focus:outline-none focus:border-sky-400"
+                  >
+                    <option value="Journal">Journal</option>
+                    <option value="Life & Tech">Life & Tech</option>
+                    <option value="Development">Development</option>
+                    <option value="Hardware">Hardware</option>
+                    <option value="AI & Robotics">AI & Robotics</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-300 mb-1 font-bold">READ TIME</label>
+                  <input
+                    type="text"
+                    value={logFormReadTime}
+                    onChange={(e) => setLogFormReadTime(e.target.value)}
+                    placeholder="e.g. 5 min read"
+                    className="w-full bg-slate-950 border border-sky-950 rounded-lg p-2.5 text-white font-sans focus:outline-none focus:border-sky-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-bold">SHORT EXCERPT / SUMMARY</label>
+                <textarea
+                  rows={2}
+                  value={logFormExcerpt}
+                  onChange={(e) => setLogFormExcerpt(e.target.value)}
+                  placeholder="Brief summary of this build log entry..."
+                  className="w-full bg-slate-950 border border-sky-950 rounded-lg p-2.5 text-white font-sans focus:outline-none focus:border-sky-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-bold">FULL CONTENT (MARKDOWN SUPPORTED)</label>
+                <textarea
+                  rows={6}
+                  required
+                  value={logFormContent}
+                  onChange={(e) => setLogFormContent(e.target.value)}
+                  placeholder="Write full article content here. Use # for headings, - for bullet lists, ![image](url) for images."
+                  className="w-full bg-slate-950 border border-sky-950 rounded-lg p-2.5 text-white font-sans focus:outline-none focus:border-sky-400"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-sky-950">
+                <button
+                  type="button"
+                  onClick={() => setIsLogEditorOpen(false)}
+                  className="px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-300 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold rounded-lg uppercase tracking-wide"
+                >
+                  {editingLogId ? 'Update Log' : 'Publish Log'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

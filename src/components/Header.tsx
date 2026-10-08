@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Terminal, Cpu } from 'lucide-react';
+import { Menu, X, Terminal, Cpu, Lock } from 'lucide-react';
 
 interface HeaderProps {
   onOpenTerminal: () => void;
@@ -9,6 +9,9 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onOpenTerminal, onNavigateSection }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
+    return localStorage.getItem('isAdminLoggedIn') === 'true';
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,8 +22,16 @@ const Header: React.FC<HeaderProps> = ({ onOpenTerminal, onNavigateSection }) =>
       }
     };
 
+    const handleStorageChange = () => {
+      setIsAdminLoggedIn(localStorage.getItem('isAdminLoggedIn') === 'true');
+    };
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const handleNavClick = (sectionId: string, e: React.MouseEvent) => {
@@ -29,6 +40,13 @@ const Header: React.FC<HeaderProps> = ({ onOpenTerminal, onNavigateSection }) =>
       onNavigateSection(sectionId);
     }
     setIsMenuOpen(false);
+  };
+
+  const handleGoToJournalPage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsMenuOpen(false);
+    window.history.pushState({}, '', '/journal');
+    window.dispatchEvent(new Event('pushstate-changed'));
   };
 
   return (
@@ -67,6 +85,17 @@ const Header: React.FC<HeaderProps> = ({ onOpenTerminal, onNavigateSection }) =>
             <a href="/#roadmap" onClick={(e) => handleNavClick('roadmap', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Roadmap</a>
             <a href="/#contact" onClick={(e) => handleNavClick('contact', e)} className="text-slate-300 hover:text-sky-400 transition-colors text-sm uppercase tracking-wide">Contact</a>
             
+            {isAdminLoggedIn && (
+              <a
+                href="/journal"
+                onClick={handleGoToJournalPage}
+                className="bg-amber-500/10 border border-amber-500/40 text-amber-400 hover:bg-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide flex items-center transition-all shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+              >
+                <Lock size={12} className="mr-1.5 text-amber-400 animate-pulse" />
+                Admin Journal
+              </a>
+            )}
+
             <button 
               onClick={() => {
                 if (onNavigateSection) onNavigateSection('contact');

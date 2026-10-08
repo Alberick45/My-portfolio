@@ -287,6 +287,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                       summary: WORKSHOP_DATA.about.summary,
                       bullets: WORKSHOP_DATA.about.bullets,
                       tags: ["ABOUT", "BIO", "CAPABILITIES"],
+                      stationType: 'about',
                       fullDetails: {
                         overview: "Albert Baiden-Amissah is a multidisciplinary systems builder based in Ghana who combines microcontrollers, low-level firmware, solid CAD assemblies, and responsive interfaces.",
                         componentsList: WORKSHOP_DATA.about.capabilities.hardware,
@@ -359,6 +360,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                       bullets: proj.bullets,
                       tags: proj.tags,
                       externalUrl: proj.githubUrl,
+                      stationType: 'project',
                       fullDetails: proj.fullDetails,
                       logEntries: proj.logEntries,
                     });
@@ -417,6 +419,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                       summary: WORKSHOP_DATA.failedCrate.summary,
                       bullets: WORKSHOP_DATA.failedCrate.bullets,
                       tags: ["GRAVEYARD", "FAILURES", "LESSONS"],
+                      stationType: 'project',
                       fullDetails: {
                         overview: "Every failure in this crate represents a concrete lesson in electrical tolerances, thermals, and mechanical load engineering.",
                         componentsList: [
@@ -500,6 +503,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                       bullets: proj.bullets,
                       tags: proj.tags,
                       externalUrl: proj.githubUrl,
+                      stationType: 'project',
                       fullDetails: proj.fullDetails,
                       logEntries: proj.logEntries,
                     });
@@ -586,6 +590,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                       bullets: proj.bullets,
                       tags: proj.tags,
                       externalUrl: proj.githubUrl,
+                      stationType: 'project',
                       fullDetails: proj.fullDetails,
                       logEntries: proj.logEntries,
                     });
@@ -665,6 +670,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                       summary: "Active roadmap plans and technical milestones planned for the workshop:",
                       bullets: WORKSHOP_DATA.roadmap.map(rm => `[${rm.quarter}] ${rm.title}: ${rm.description}`),
                       tags: ["ROADMAP", "MILESTONES", "PLANS"],
+                      stationType: 'roadmap',
                       fullDetails: {
                         overview: "The active workshop roadmap details strategic milestones across wireless mesh networks, edge AI vision nodes, and custom PCB fabrication.",
                         componentsList: WORKSHOP_DATA.roadmap.map(r => `${r.quarter}: ${r.title} (${r.status})`),
@@ -769,6 +775,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                       summary: latest.summary,
                       bullets: latest.bullets,
                       tags: ["JOURNAL", latest.category, latest.readTime],
+                      stationType: 'journal',
                       fullDetails: {
                         overview: latest.content,
                         schematicNotes: [
@@ -834,6 +841,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({ onOpenTerminal }) => {
                       summary: WORKSHOP_DATA.contact.summary,
                       bullets: WORKSHOP_DATA.contact.bullets,
                       tags: ["CONTACT", "TERMINAL", "COMMS"],
+                      stationType: 'contact',
                       onOpenTerminal: onOpenTerminal,
                       fullDetails: {
                         overview: "The CRT Control Desk provides an interactive command line interface (CLI) to query visitor session telemetry, inspect developer dossiers, or launch admin tools.",
